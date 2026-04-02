@@ -21,7 +21,6 @@
             align-items: center;
         }
 
-        /* Contenedor principal: ancho máximo y centrado */
         .calculator {
             max-width: 800px;
             width: 100%;
@@ -32,7 +31,6 @@
             padding: 1.5rem;
             box-shadow: 0 20px 35px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
             border: 1px solid rgba(255,215,140,0.3);
-            transition: all 0.2s;
         }
 
         h1 {
@@ -43,7 +41,6 @@
             -webkit-background-clip: text;
             color: transparent;
             margin-bottom: 0.25rem;
-            letter-spacing: -0.5px;
         }
 
         .sub {
@@ -57,7 +54,6 @@
             padding-bottom: 0.3rem;
         }
 
-        /* Panel de puntos */
         .points-panel {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 2rem;
@@ -108,7 +104,6 @@
             color: #f1c40f;
         }
 
-        /* Barra de progreso */
         .progress-container {
             background: #2c3e2e4d;
             border-radius: 2rem;
@@ -125,7 +120,6 @@
             transition: width 0.2s;
         }
 
-        /* Grid de atributos: en móvil una columna, en tablet dos si sobra espacio */
         .attributes-grid {
             display: flex;
             flex-direction: column;
@@ -133,14 +127,12 @@
             margin: 1.5rem 0 1rem;
         }
 
-        /* Cada tarjeta de atributo */
         .attr-card {
             background: rgba(15, 25, 35, 0.85);
             border-radius: 1.5rem;
             padding: 0.9rem 1rem;
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255,215,140,0.2);
-            transition: all 0.15s;
         }
 
         .attr-header {
@@ -169,7 +161,6 @@
             color: #bbd4ff;
         }
 
-        /* Fila de controles: slider y número */
         .value-row {
             display: flex;
             align-items: center;
@@ -239,6 +230,12 @@
             color: #e6c384;
         }
 
+        .button-group {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
         button {
             background: #ffb347;
             border: none;
@@ -248,12 +245,11 @@
             color: #1e2a32;
             font-size: 1rem;
             cursor: pointer;
-            width: 100%;
+            flex: 1;
             font-family: inherit;
             box-shadow: 0 4px 0 #a05e15;
             transform: translateY(-2px);
             transition: 0.05s linear;
-            margin-top: 0.5rem;
         }
         button:active {
             transform: translateY(2px);
@@ -266,65 +262,24 @@
             margin-top: 1.5rem;
         }
 
-        /* Ajustes extra para móviles muy pequeños */
         @media (max-width: 550px) {
-            body {
-                padding: 10px;
-            }
-            .calculator {
-                padding: 1rem;
-            }
-            .points-panel {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .value-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .slider {
-                width: 100%;
-            }
-            .stat-value {
-                text-align: center;
-                width: 100%;
-            }
-            .number-input {
-                text-align: center;
-            }
-            .number-input input {
-                width: 90%;
-                max-width: 120px;
-                margin: 0 auto;
-            }
-            .attr-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .cost-info {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-
-        /* Para pantallas entre 550 y 700px, mantener slider+numero en fila pero más compacto */
-        @media (min-width: 551px) and (max-width: 700px) {
-            .value-row {
-                flex-wrap: nowrap;
-            }
-            .slider {
-                flex: 3;
-            }
-            .stat-value {
-                min-width: 50px;
-            }
+            body { padding: 10px; }
+            .calculator { padding: 1rem; }
+            .points-panel { flex-direction: column; align-items: stretch; }
+            .value-row { flex-direction: column; align-items: stretch; }
+            .slider { width: 100%; }
+            .stat-value { text-align: center; width: 100%; }
+            .number-input input { width: 90%; max-width: 120px; margin: 0 auto; }
+            .attr-header { flex-direction: column; align-items: flex-start; }
+            .cost-info { flex-direction: column; align-items: flex-start; }
+            .button-group { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 <div class="calculator">
     <h1>⚔️ FORJADOR DE HÉROES ⚔️</h1>
-    <div style="text-align: center;"><span class="sub">Distribuye 200 puntos de atributo</span></div>
+    <div style="text-align: center;"><span class="sub">Distribuye 200 puntos de atributo (mínimo 1 en cada uno)</span></div>
 
     <div class="points-panel">
         <div class="total-box">
@@ -335,7 +290,7 @@
             <div class="total-label">PUNTOS RESTANTES</div>
             <div class="total-value" id="remainingPointsDisplay">200</div>
         </div>
-        <div class="warning" id="warningMsg">✨ Ajusta los atributos</div>
+        <div class="warning" id="warningMsg">✨ Ajusta los atributos (mínimo 1)</div>
     </div>
     <div class="progress-container">
         <div class="progress-bar" id="progressBar"></div>
@@ -343,22 +298,48 @@
 
     <div class="attributes-grid" id="attributesContainer"></div>
 
-    <button id="resetBtn">♻️ REINICIAR ATRIBUTOS (0 puntos)</button>
+    <div class="button-group">
+        <button id="resetBtn">♻️ VALORES MÍNIMOS (1)</button>
+        <button id="randomBtn">🎲 DISTRIBUIR ALEATORIO</button>
+    </div>
     <footer>Vida (1:1) · Daño (5:1) · Armadura (10:1) · Pasos (10:1) · FP (1:1) · Alcance (10:1)</footer>
 </div>
 
 <script>
     const attributes = [
-        { id: "hp", name: "❤️ VIDA", maxValue: 80, costPerUnit: 1, baseUnit: 1, initial: 0 },
-        { id: "dmg", name: "⚔️ DAÑO", maxValue: 8, costPerUnit: 5, baseUnit: 0.2, initial: 0 },
-        { id: "armor", name: "🛡️ ARMADURA", maxValue: 6, costPerUnit: 10, baseUnit: 0.1, initial: 0 },
-        { id: "steps", name: "👟 PASOS", maxValue: 8, costPerUnit: 10, baseUnit: 0.1, initial: 0 },
-        { id: "fp", name: "✨ FP", maxValue: 60, costPerUnit: 1, baseUnit: 1, initial: 0 },
-        { id: "range", name: "🏹 ALCANCE", maxValue: 8, costPerUnit: 10, baseUnit: 0.1, initial: 0 }
+        { id: "hp", name: "❤️ VIDA", maxValue: 80, costPerUnit: 1, minValue: 1 },
+        { id: "dmg", name: "⚔️ DAÑO", maxValue: 8, costPerUnit: 5, minValue: 1 },
+        { id: "armor", name: "🛡️ ARMADURA", maxValue: 6, costPerUnit: 10, minValue: 1 },
+        { id: "steps", name: "👟 PASOS", maxValue: 8, costPerUnit: 10, minValue: 1 },
+        { id: "fp", name: "✨ FP", maxValue: 60, costPerUnit: 1, minValue: 1 },
+        { id: "range", name: "🏹 ALCANCE", maxValue: 8, costPerUnit: 10, minValue: 1 }
     ];
 
     let currentValues = {};
-    attributes.forEach(attr => { currentValues[attr.id] = 0; });
+
+    // Inicializar todos los atributos a 1 (mínimo)
+    function resetToBase() {
+        attributes.forEach(attr => {
+            currentValues[attr.id] = attr.minValue;
+        });
+        updateUI();
+        syncInputsWithCurrent();
+    }
+
+    // Sincronizar sliders e inputs con currentValues
+    function syncInputsWithCurrent() {
+        attributes.forEach(attr => {
+            const val = currentValues[attr.id];
+            const slider = document.getElementById(`${attr.id}_slider`);
+            if (slider && slider.value != val) slider.value = val;
+            const numInput = document.getElementById(`${attr.id}_num`);
+            if (numInput && numInput.value != val) numInput.value = val;
+            const valueSpan = document.getElementById(`${attr.id}_value`);
+            if (valueSpan) valueSpan.innerText = val;
+            const costSpan = document.getElementById(`${attr.id}_cost`);
+            if (costSpan) costSpan.innerText = `${val * attr.costPerUnit} pts`;
+        });
+    }
 
     function calculateTotalPoints() {
         let total = 0;
@@ -369,21 +350,38 @@
     function setAttributeValue(attrId, newRawValue) {
         const attr = attributes.find(a => a.id === attrId);
         if (!attr) return;
-        let clampedValue = Math.min(attr.maxValue, Math.max(0, newRawValue));
+        
+        // Validar mínimo (1)
+        if (newRawValue < attr.minValue) {
+            document.getElementById("warningMsg").innerHTML = `⚠️ El mínimo para ${attr.name} es ${attr.minValue}. No se puede reducir.`;
+            document.getElementById("warningMsg").style.color = "#ffaa88";
+            // No cambiar el valor, solo mostrar mensaje
+            // Forzar que el slider/input vuelvan al valor actual
+            setTimeout(() => {
+                const slider = document.getElementById(`${attr.id}_slider`);
+                if (slider) slider.value = currentValues[attr.id];
+                const numInput = document.getElementById(`${attr.id}_num`);
+                if (numInput) numInput.value = currentValues[attr.id];
+            }, 10);
+            return;
+        }
+        
+        let clampedValue = Math.min(attr.maxValue, newRawValue);
         const oldValue = currentValues[attrId];
         const oldTotal = calculateTotalPoints();
         let newTotalWithoutAdjust = oldTotal - (oldValue * attr.costPerUnit) + (clampedValue * attr.costPerUnit);
         let finalValue = clampedValue;
+        
         if (newTotalWithoutAdjust > 200) {
             const excess = newTotalWithoutAdjust - 200;
             const maxReduction = Math.ceil(excess / attr.costPerUnit);
             let possibleValue = clampedValue - maxReduction;
-            if (possibleValue < 0) possibleValue = 0;
+            if (possibleValue < attr.minValue) possibleValue = attr.minValue;
             const adjustedTotal = oldTotal - (oldValue * attr.costPerUnit) + (possibleValue * attr.costPerUnit);
             if (adjustedTotal <= 200) finalValue = possibleValue;
             else {
-                let best = 0;
-                for (let v = 0; v <= clampedValue; v++) {
+                let best = attr.minValue;
+                for (let v = attr.minValue; v <= clampedValue; v++) {
                     const testTotal = oldTotal - (oldValue * attr.costPerUnit) + (v * attr.costPerUnit);
                     if (testTotal <= 200 && v <= attr.maxValue) best = v;
                     else break;
@@ -391,11 +389,12 @@
                 finalValue = best;
             }
         }
+        
         if (currentValues[attrId] !== finalValue) {
             currentValues[attrId] = finalValue;
             updateUI();
         } else {
-            updateUI();
+            updateUI(); // para refrescar mensajes
         }
     }
 
@@ -406,6 +405,7 @@
         document.getElementById("remainingPointsDisplay").innerText = remaining;
         const percent = Math.min(100, (totalPoints / 200) * 100);
         document.getElementById("progressBar").style.width = `${percent}%`;
+        
         const warningDiv = document.getElementById("warningMsg");
         if (totalPoints > 200) {
             warningDiv.innerHTML = "⚠️ ¡Has excedido los 200 puntos! Reduce algún atributo. ⚠️";
@@ -414,9 +414,11 @@
             warningDiv.innerHTML = "✅ ¡PUNTOS JUSTOS! Héroe listo para la aventura ✅";
             warningDiv.style.color = "#b9ffb9";
         } else {
-            warningDiv.innerHTML = `📌 Te quedan ${remaining} puntos para distribuir.`;
+            warningDiv.innerHTML = `📌 Te quedan ${remaining} puntos para distribuir. (Mínimo 1 por atributo)`;
             warningDiv.style.color = "#f1c40f";
         }
+        
+        // Actualizar cada tarjeta
         attributes.forEach(attr => {
             const val = currentValues[attr.id];
             const spent = val * attr.costPerUnit;
@@ -431,6 +433,68 @@
         });
     }
 
+    // Distribución aleatoria respetando máximos y puntos disponibles
+    function randomDistribution() {
+        // Primero poner valores mínimos (1)
+        resetToBase();
+        let remainingPoints = 200 - calculateTotalPoints(); // 163 al inicio
+        
+        // Lista de índices de atributos
+        let indices = attributes.map((_, i) => i);
+        let attempts = 0;
+        const maxAttempts = 2000;
+        
+        // Mezclar para evitar sesgos
+        while (remainingPoints > 0 && attempts < maxAttempts) {
+            // Barajar copia de índices para elegir aleatoriamente
+            let shuffled = [...indices];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            let changed = false;
+            for (let idx of shuffled) {
+                const attr = attributes[idx];
+                const currentVal = currentValues[attr.id];
+                if (currentVal < attr.maxValue) {
+                    const cost = attr.costPerUnit;
+                    if (remainingPoints >= cost) {
+                        currentValues[attr.id]++;
+                        remainingPoints -= cost;
+                        changed = true;
+                        break; // reiniciar el ciclo while
+                    }
+                }
+            }
+            if (!changed) break; // no se puede incrementar más ningún atributo
+            attempts++;
+        }
+        
+        // Si aún sobran puntos (por ejemplo 3 puntos y solo quedan atributos con coste 5 o 10), intentar con atributos de coste 1 (Vida o FP)
+        if (remainingPoints > 0) {
+            const cheapAttrs = attributes.filter(a => a.costPerUnit === 1 && currentValues[a.id] < a.maxValue);
+            for (let attr of cheapAttrs) {
+                while (remainingPoints >= 1 && currentValues[attr.id] < attr.maxValue) {
+                    currentValues[attr.id]++;
+                    remainingPoints -= 1;
+                }
+                if (remainingPoints === 0) break;
+            }
+        }
+        
+        // Si aún quedan puntos (raro) se ignoran, pero actualizamos UI
+        updateUI();
+        syncInputsWithCurrent();
+        document.getElementById("warningMsg").innerHTML = "🎲 Distribución aleatoria completada.";
+        setTimeout(() => {
+            if (calculateTotalPoints() !== 200) {
+                document.getElementById("warningMsg").innerHTML = `⚠️ Distribución aleatoria: se usaron ${200-remainingPoints} de 200 puntos. Ajusta manualmente.`;
+            } else {
+                document.getElementById("warningMsg").innerHTML = "✅ Distribución aleatoria exitosa (200 puntos).";
+            }
+        }, 1500);
+    }
+
     function buildAttributesUI() {
         const container = document.getElementById("attributesContainer");
         container.innerHTML = "";
@@ -440,19 +504,20 @@
             card.innerHTML = `
                 <div class="attr-header">
                     <span class="attr-name">${attr.name}</span>
-                    <span class="attr-limits">máx ${attr.maxValue}</span>
+                    <span class="attr-limits">mín ${attr.minValue} · máx ${attr.maxValue}</span>
                 </div>
                 <div class="value-row">
-                    <input type="range" class="slider" id="${attr.id}_slider" min="0" max="${attr.maxValue}" step="1" value="0">
-                    <div class="stat-value" id="${attr.id}_value">0</div>
-                    <div class="number-input"><input type="number" id="${attr.id}_num" min="0" max="${attr.maxValue}" step="1" value="0"></div>
+                    <input type="range" class="slider" id="${attr.id}_slider" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="${attr.minValue}">
+                    <div class="stat-value" id="${attr.id}_value">${attr.minValue}</div>
+                    <div class="number-input"><input type="number" id="${attr.id}_num" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="${attr.minValue}"></div>
                 </div>
                 <div class="cost-info">
-                    <span class="points-cost" id="${attr.id}_cost">0 pts</span>
+                    <span class="points-cost" id="${attr.id}_cost">${attr.minValue * attr.costPerUnit} pts</span>
                     <span class="max-warning">${attr.costPerUnit === 1 ? (attr.id === "hp" ? "1 punto → 1 Vida" : "1 punto → 1 FP") : (attr.costPerUnit === 5 ? "5 puntos → +1 Daño" : "10 puntos → +1 " + attr.name.replace(/[^A-Za-zÁÉÍÓÚ]/g, ''))}</span>
                 </div>
             `;
             container.appendChild(card);
+            
             const slider = document.getElementById(`${attr.id}_slider`);
             const numberInput = document.getElementById(`${attr.id}_num`);
             slider.addEventListener("input", (e) => setAttributeValue(attr.id, parseInt(e.target.value, 10)));
@@ -460,24 +525,16 @@
         });
     }
 
-    function resetAttributes() {
-        attributes.forEach(attr => { currentValues[attr.id] = 0; });
+    // Inicializar con valores mínimos (1)
+    function init() {
+        buildAttributesUI();
+        resetToBase();  // pone todo a 1
         updateUI();
-        attributes.forEach(attr => {
-            const slider = document.getElementById(`${attr.id}_slider`);
-            if (slider) slider.value = 0;
-            const numInput = document.getElementById(`${attr.id}_num`);
-            if (numInput) numInput.value = 0;
-            const valSpan = document.getElementById(`${attr.id}_value`);
-            if (valSpan) valSpan.innerText = 0;
-            const costSpan = document.getElementById(`${attr.id}_cost`);
-            if (costSpan) costSpan.innerText = "0 pts";
-        });
+        document.getElementById("resetBtn").addEventListener("click", () => resetToBase());
+        document.getElementById("randomBtn").addEventListener("click", () => randomDistribution());
     }
-
-    buildAttributesUI();
-    updateUI();
-    document.getElementById("resetBtn").addEventListener("click", resetAttributes);
+    
+    init();
 </script>
 </body>
 </html>
