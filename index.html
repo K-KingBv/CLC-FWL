@@ -1,106 +1,96 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Calculadora de Atributos - Juego de Rol</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Calculadora de Atributos - Rol</title>
     <style>
         * {
             box-sizing: border-box;
-            user-select: none; /* evita selección accidental en móvil, pero no afecta inputs */
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
             background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
-            margin: 0;
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* contenedor principal */
+        /* Contenedor principal: ancho máximo y centrado */
         .calculator {
-            max-width: 700px;
+            max-width: 800px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(2px);
-            border-radius: 48px;
-            padding: 20px 24px 32px;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 0 auto;
+            background: rgba(10, 20, 30, 0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,215,140,0.3);
+            transition: all 0.2s;
         }
 
         h1 {
-            font-size: 1.8rem;
+            font-size: clamp(1.5rem, 6vw, 2.2rem);
             text-align: center;
-            margin: 0 0 8px 0;
-            font-weight: 700;
             background: linear-gradient(135deg, #FFE6B0, #FFB347);
-            -webkit-background-clip: text;
             background-clip: text;
+            -webkit-background-clip: text;
             color: transparent;
+            margin-bottom: 0.25rem;
             letter-spacing: -0.5px;
-            text-shadow: 0 2px 3px rgba(0,0,0,0.2);
         }
 
         .sub {
             text-align: center;
             color: #bcd0e0;
-            margin-bottom: 28px;
-            font-size: 0.9rem;
+            font-size: clamp(0.75rem, 3vw, 0.9rem);
             border-bottom: 1px dashed rgba(255,215,150,0.4);
             display: inline-block;
             width: auto;
-            margin-left: auto;
-            margin-right: auto;
-            padding-bottom: 6px;
+            margin: 0 auto 1.2rem auto;
+            padding-bottom: 0.3rem;
         }
 
-        /* tarjeta de puntos totales */
+        /* Panel de puntos */
         .points-panel {
-            background: #0b1620c9;
-            border-radius: 40px;
-            padding: 16px 20px;
-            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 2rem;
+            padding: 0.9rem 1rem;
+            margin-bottom: 1.5rem;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            align-items: baseline;
-            gap: 12px;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,200,100,0.3);
+            align-items: center;
+            gap: 0.8rem;
         }
 
-        .total-box {
+        .total-box, .remaining {
             background: #00000066;
-            border-radius: 32px;
-            padding: 8px 18px;
+            border-radius: 2rem;
+            padding: 0.4rem 1rem;
             text-align: center;
+            flex: 1;
+            min-width: 110px;
         }
 
         .total-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #9bb7d4;
         }
 
         .total-value {
-            font-size: 2.2rem;
+            font-size: clamp(1.4rem, 5vw, 2rem);
             font-weight: 800;
-            line-height: 1;
+            line-height: 1.2;
             color: #FFD966;
-        }
-
-        .remaining {
-            background: #1e2f3c;
-            border-radius: 32px;
-            padding: 8px 18px;
-            text-align: center;
         }
 
         .remaining .total-value {
@@ -108,47 +98,49 @@
         }
 
         .warning {
-            font-size: 0.75rem;
-            color: #f1c40f;
+            font-size: 0.7rem;
             background: #2c1e0e80;
-            border-radius: 60px;
-            padding: 6px 14px;
+            border-radius: 2rem;
+            padding: 0.4rem 0.8rem;
+            text-align: center;
+            flex: 2;
+            min-width: 140px;
+            color: #f1c40f;
         }
 
-        /* barra de progreso */
+        /* Barra de progreso */
         .progress-container {
             background: #2c3e2e4d;
-            border-radius: 30px;
-            height: 12px;
+            border-radius: 2rem;
+            height: 10px;
             width: 100%;
-            margin-top: 8px;
+            margin: 0.5rem 0 1rem;
             overflow: hidden;
         }
-
         .progress-bar {
             background: linear-gradient(90deg, #f3b33d, #ffdd77);
             width: 0%;
             height: 100%;
-            border-radius: 30px;
-            transition: width 0.2s ease;
+            border-radius: 2rem;
+            transition: width 0.2s;
         }
 
-        /* atributos grid */
+        /* Grid de atributos: en móvil una columna, en tablet dos si sobra espacio */
         .attributes-grid {
             display: flex;
             flex-direction: column;
-            gap: 18px;
-            margin: 25px 0 20px;
+            gap: 1rem;
+            margin: 1.5rem 0 1rem;
         }
 
+        /* Cada tarjeta de atributo */
         .attr-card {
-            background: rgba(10, 20, 30, 0.7);
-            border-radius: 28px;
-            padding: 12px 18px;
+            background: rgba(15, 25, 35, 0.85);
+            border-radius: 1.5rem;
+            padding: 0.9rem 1rem;
             backdrop-filter: blur(4px);
-            transition: all 0.2s;
             border: 1px solid rgba(255,215,140,0.2);
-            box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+            transition: all 0.15s;
         }
 
         .attr-header {
@@ -156,45 +148,44 @@
             justify-content: space-between;
             align-items: baseline;
             flex-wrap: wrap;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
+            gap: 0.3rem;
         }
 
         .attr-name {
             font-weight: bold;
-            font-size: 1.3rem;
-            letter-spacing: -0.3px;
+            font-size: clamp(1.1rem, 4.5vw, 1.3rem);
             background: linear-gradient(120deg, #f5e7c8, #ffcf8a);
-            -webkit-background-clip: text;
             background-clip: text;
+            -webkit-background-clip: text;
             color: transparent;
         }
 
         .attr-limits {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             background: #00000055;
-            padding: 4px 10px;
-            border-radius: 40px;
+            padding: 0.2rem 0.7rem;
+            border-radius: 2rem;
             color: #bbd4ff;
         }
 
+        /* Fila de controles: slider y número */
         .value-row {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 0.8rem;
             flex-wrap: wrap;
-            margin: 10px 0 5px;
+            margin: 0.5rem 0 0.3rem;
         }
 
         .slider {
-            flex: 3;
-            min-width: 150px;
+            flex: 2;
+            min-width: 130px;
             height: 6px;
             -webkit-appearance: none;
             background: #2d3e4e;
             border-radius: 10px;
-            outline: none;
         }
-
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 22px;
@@ -202,116 +193,138 @@
             background: #ffb347;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 8px #ffae42;
+            box-shadow: 0 0 6px #ffae42;
             border: 2px solid white;
         }
 
         .stat-value {
             background: #0f1a1f;
-            width: 70px;
+            min-width: 55px;
             text-align: center;
-            padding: 8px 0;
-            border-radius: 40px;
+            padding: 0.4rem 0;
+            border-radius: 2rem;
             font-weight: bold;
             font-size: 1.2rem;
             color: #f5bc70;
             border: 1px solid #ffb34766;
         }
 
+        .number-input input {
+            background: #09161e;
+            border: 1px solid #ffb34788;
+            color: #ffdd99;
+            border-radius: 2rem;
+            padding: 0.4rem 0.3rem;
+            width: 70px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
         .cost-info {
-            font-size: 0.75rem;
-            color: #aac8e6;
             display: flex;
             justify-content: space-between;
-            margin-top: 6px;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.6rem;
+            font-size: 0.7rem;
+            color: #aac8e6;
         }
-
         .points-cost {
             background: #00000060;
-            padding: 4px 12px;
-            border-radius: 24px;
-            font-family: monospace;
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
             font-weight: bold;
             color: #e6c384;
-        }
-
-        .max-warning {
-            color: #ffa098;
-            font-size: 0.7rem;
         }
 
         button {
             background: #ffb347;
             border: none;
             font-weight: bold;
-            padding: 12px 24px;
-            border-radius: 60px;
+            padding: 0.8rem 1rem;
+            border-radius: 3rem;
             color: #1e2a32;
             font-size: 1rem;
             cursor: pointer;
-            transition: 0.2s;
             width: 100%;
-            margin-top: 10px;
             font-family: inherit;
-            box-shadow: 0 5px 0 #a05e15;
+            box-shadow: 0 4px 0 #a05e15;
             transform: translateY(-2px);
+            transition: 0.05s linear;
+            margin-top: 0.5rem;
         }
-
         button:active {
             transform: translateY(2px);
             box-shadow: 0 1px 0 #a05e15;
         }
-
         footer {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-align: center;
             color: #6e8eae;
-            margin-top: 24px;
+            margin-top: 1.5rem;
         }
 
+        /* Ajustes extra para móviles muy pequeños */
         @media (max-width: 550px) {
+            body {
+                padding: 10px;
+            }
             .calculator {
-                padding: 16px;
-            }
-            .attr-name {
-                font-size: 1.1rem;
-            }
-            .stat-value {
-                width: 55px;
-                font-size: 1rem;
-            }
-            .value-row {
-                gap: 8px;
+                padding: 1rem;
             }
             .points-panel {
                 flex-direction: column;
                 align-items: stretch;
             }
+            .value-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .slider {
+                width: 100%;
+            }
+            .stat-value {
+                text-align: center;
+                width: 100%;
+            }
+            .number-input {
+                text-align: center;
+            }
+            .number-input input {
+                width: 90%;
+                max-width: 120px;
+                margin: 0 auto;
+            }
+            .attr-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .cost-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
 
-        input[type=number] {
-            background: #09161e;
-            border: 1px solid #ffb34788;
-            color: #ffdd99;
-            border-radius: 30px;
-            padding: 6px 10px;
-            width: 70px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-        .number-input {
-            display: flex;
-            gap: 8px;
-            align-items: center;
+        /* Para pantallas entre 550 y 700px, mantener slider+numero en fila pero más compacto */
+        @media (min-width: 551px) and (max-width: 700px) {
+            .value-row {
+                flex-wrap: nowrap;
+            }
+            .slider {
+                flex: 3;
+            }
+            .stat-value {
+                min-width: 50px;
+            }
         }
     </style>
 </head>
 <body>
 <div class="calculator">
     <h1>⚔️ FORJADOR DE HÉROES ⚔️</h1>
-    <div style="text-align: center"><span class="sub">Distribuye 200 puntos de atributo</span></div>
+    <div style="text-align: center;"><span class="sub">Distribuye 200 puntos de atributo</span></div>
 
     <div class="points-panel">
         <div class="total-box">
@@ -325,7 +338,7 @@
         <div class="warning" id="warningMsg">✨ Ajusta los atributos</div>
     </div>
     <div class="progress-container">
-        <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+        <div class="progress-bar" id="progressBar"></div>
     </div>
 
     <div class="attributes-grid" id="attributesContainer"></div>
@@ -335,7 +348,6 @@
 </div>
 
 <script>
-    // Definición de atributos
     const attributes = [
         { id: "hp", name: "❤️ VIDA", maxValue: 80, costPerUnit: 1, baseUnit: 1, initial: 0 },
         { id: "dmg", name: "⚔️ DAÑO", maxValue: 8, costPerUnit: 5, baseUnit: 0.2, initial: 0 },
@@ -345,102 +357,31 @@
         { id: "range", name: "🏹 ALCANCE", maxValue: 8, costPerUnit: 10, baseUnit: 0.1, initial: 0 }
     ];
 
-    // Estado actual de cada estadística (valor numérico, ej: Vida = 0..80)
     let currentValues = {};
+    attributes.forEach(attr => { currentValues[attr.id] = 0; });
 
-    // Inicializar valores a 0
-    attributes.forEach(attr => {
-        currentValues[attr.id] = 0;
-    });
-
-    // Función para calcular puntos gastados según valores actuales
     function calculateTotalPoints() {
         let total = 0;
-        attributes.forEach(attr => {
-            const value = currentValues[attr.id];
-            total += value * attr.costPerUnit;
-        });
+        attributes.forEach(attr => { total += currentValues[attr.id] * attr.costPerUnit; });
         return total;
     }
 
-    // Actualiza toda la UI: puntos restantes, barra, mensajes, y también ajusta sliders/inputs si es necesario
-    function updateUI() {
-        const totalPoints = calculateTotalPoints();
-        const remaining = 200 - totalPoints;
-        document.getElementById("totalPointsDisplay").innerText = totalPoints;
-        document.getElementById("remainingPointsDisplay").innerText = remaining;
-        const percent = Math.min(100, (totalPoints / 200) * 100);
-        document.getElementById("progressBar").style.width = `${percent}%`;
-
-        const warningDiv = document.getElementById("warningMsg");
-        if (totalPoints > 200) {
-            warningDiv.innerHTML = "⚠️ ¡Has excedido los 200 puntos! Reduce algún atributo. ⚠️";
-            warningDiv.style.color = "#ffaa88";
-            warningDiv.style.fontWeight = "bold";
-            warningDiv.style.background = "#4a1a1aaa";
-        } else if (totalPoints === 200) {
-            warningDiv.innerHTML = "✅ ¡PUNTOS JUSTOS! Héroe listo para la aventura ✅";
-            warningDiv.style.color = "#b9ffb9";
-            warningDiv.style.background = "#2e5c2e80";
-        } else {
-            warningDiv.innerHTML = `📌 Te quedan ${remaining} puntos para distribuir.`;
-            warningDiv.style.color = "#f1c40f";
-            warningDiv.style.background = "#2c1e0e80";
-        }
-
-        // Actualizar cada tarjeta: mostrar valor actual, puntos gastados de ese atributo, y límites
-        attributes.forEach(attr => {
-            const val = currentValues[attr.id];
-            const spent = val * attr.costPerUnit;
-            // elementos HTML
-            const valueSpan = document.getElementById(`${attr.id}_value`);
-            if (valueSpan) valueSpan.innerText = val;
-            const costSpan = document.getElementById(`${attr.id}_cost`);
-            if (costSpan) costSpan.innerText = spent;
-            const slider = document.getElementById(`${attr.id}_slider`);
-            if (slider && slider.value != val) slider.value = val;
-            const numberInput = document.getElementById(`${attr.id}_num`);
-            if (numberInput && numberInput.value != val) numberInput.value = val;
-            // Adicional: si el valor supera el máximo por algún error, lo corregimos
-            if (val > attr.maxValue) {
-                currentValues[attr.id] = attr.maxValue;
-                updateUI(); // recursión controlada, pero no generará bucle porque se reasigna al max y volverá a llamar. Mejor prevenir:
-                // Para evitar loops, mejor corregir y luego refrescar una sola vez usando petición de actualización diferida
-            }
-        });
-
-        // Habilitar/deshabilitar visualmente si hay exceso, pero dejamos que los sliders manejen restricciones en tiempo real
-        const anyOver = (calculateTotalPoints() > 200);
-        // solo efecto visual en los botones? no es necesario bloquear sliders porque el evento onChange ya limitará.
-    }
-
-    // Función robusta para cambiar un atributo a un nuevo valor respetando límite de puntos (200)
     function setAttributeValue(attrId, newRawValue) {
         const attr = attributes.find(a => a.id === attrId);
         if (!attr) return;
-
-        // asegurar que el valor esté dentro del rango 0..maxValue
         let clampedValue = Math.min(attr.maxValue, Math.max(0, newRawValue));
-        // Obtener puntos actuales sin modificar aún
         const oldValue = currentValues[attrId];
         const oldTotal = calculateTotalPoints();
-        const newTotalWithoutAdjust = oldTotal - (oldValue * attr.costPerUnit) + (clampedValue * attr.costPerUnit);
-        
+        let newTotalWithoutAdjust = oldTotal - (oldValue * attr.costPerUnit) + (clampedValue * attr.costPerUnit);
         let finalValue = clampedValue;
-        // Si supera el límite de 200 puntos, calcular el máximo valor posible sin pasarse
         if (newTotalWithoutAdjust > 200) {
-            // Determinar cuántos puntos extra se exceden
             const excess = newTotalWithoutAdjust - 200;
-            // Cuántas unidades podemos reducir máximo? Reducir este atributo (pero no por debajo de 0)
-            const maxReductionInUnits = Math.ceil(excess / attr.costPerUnit);
-            let possibleValue = clampedValue - maxReductionInUnits;
+            const maxReduction = Math.ceil(excess / attr.costPerUnit);
+            let possibleValue = clampedValue - maxReduction;
             if (possibleValue < 0) possibleValue = 0;
-            // Recalcular con el valor ajustado
             const adjustedTotal = oldTotal - (oldValue * attr.costPerUnit) + (possibleValue * attr.costPerUnit);
-            if (adjustedTotal <= 200) {
-                finalValue = possibleValue;
-            } else {
-                // fallback: buscar valor máximo que no exceda
+            if (adjustedTotal <= 200) finalValue = possibleValue;
+            else {
                 let best = 0;
                 for (let v = 0; v <= clampedValue; v++) {
                     const testTotal = oldTotal - (oldValue * attr.costPerUnit) + (v * attr.costPerUnit);
@@ -450,114 +391,78 @@
                 finalValue = best;
             }
         }
-        
-        // Actualizar y refrescar
         if (currentValues[attrId] !== finalValue) {
             currentValues[attrId] = finalValue;
-            updateUI();
-        } else if (newRawValue !== finalValue && newRawValue !== currentValues[attrId]) {
-            // si se intentó poner un valor pero fue limitado, igual actualizar UI
             updateUI();
         } else {
             updateUI();
         }
     }
 
-    // Crear la interfaz de cada atributo dinámicamente
+    function updateUI() {
+        const totalPoints = calculateTotalPoints();
+        const remaining = 200 - totalPoints;
+        document.getElementById("totalPointsDisplay").innerText = totalPoints;
+        document.getElementById("remainingPointsDisplay").innerText = remaining;
+        const percent = Math.min(100, (totalPoints / 200) * 100);
+        document.getElementById("progressBar").style.width = `${percent}%`;
+        const warningDiv = document.getElementById("warningMsg");
+        if (totalPoints > 200) {
+            warningDiv.innerHTML = "⚠️ ¡Has excedido los 200 puntos! Reduce algún atributo. ⚠️";
+            warningDiv.style.color = "#ffaa88";
+        } else if (totalPoints === 200) {
+            warningDiv.innerHTML = "✅ ¡PUNTOS JUSTOS! Héroe listo para la aventura ✅";
+            warningDiv.style.color = "#b9ffb9";
+        } else {
+            warningDiv.innerHTML = `📌 Te quedan ${remaining} puntos para distribuir.`;
+            warningDiv.style.color = "#f1c40f";
+        }
+        attributes.forEach(attr => {
+            const val = currentValues[attr.id];
+            const spent = val * attr.costPerUnit;
+            const valueSpan = document.getElementById(`${attr.id}_value`);
+            if (valueSpan) valueSpan.innerText = val;
+            const costSpan = document.getElementById(`${attr.id}_cost`);
+            if (costSpan) costSpan.innerText = `${spent} pts`;
+            const slider = document.getElementById(`${attr.id}_slider`);
+            if (slider && slider.value != val) slider.value = val;
+            const numInput = document.getElementById(`${attr.id}_num`);
+            if (numInput && numInput.value != val) numInput.value = val;
+        });
+    }
+
     function buildAttributesUI() {
         const container = document.getElementById("attributesContainer");
         container.innerHTML = "";
         attributes.forEach(attr => {
             const card = document.createElement("div");
             card.className = "attr-card";
-
-            // Header con nombre y límite
-            const header = document.createElement("div");
-            header.className = "attr-header";
-            header.innerHTML = `
-                <span class="attr-name">${attr.name}</span>
-                <span class="attr-limits">máx ${attr.maxValue}</span>
+            card.innerHTML = `
+                <div class="attr-header">
+                    <span class="attr-name">${attr.name}</span>
+                    <span class="attr-limits">máx ${attr.maxValue}</span>
+                </div>
+                <div class="value-row">
+                    <input type="range" class="slider" id="${attr.id}_slider" min="0" max="${attr.maxValue}" step="1" value="0">
+                    <div class="stat-value" id="${attr.id}_value">0</div>
+                    <div class="number-input"><input type="number" id="${attr.id}_num" min="0" max="${attr.maxValue}" step="1" value="0"></div>
+                </div>
+                <div class="cost-info">
+                    <span class="points-cost" id="${attr.id}_cost">0 pts</span>
+                    <span class="max-warning">${attr.costPerUnit === 1 ? (attr.id === "hp" ? "1 punto → 1 Vida" : "1 punto → 1 FP") : (attr.costPerUnit === 5 ? "5 puntos → +1 Daño" : "10 puntos → +1 " + attr.name.replace(/[^A-Za-zÁÉÍÓÚ]/g, ''))}</span>
+                </div>
             `;
-
-            // Fila de slider y valor numérico
-            const valueRow = document.createElement("div");
-            valueRow.className = "value-row";
-
-            const slider = document.createElement("input");
-            slider.type = "range";
-            slider.className = "slider";
-            slider.id = `${attr.id}_slider`;
-            slider.min = 0;
-            slider.max = attr.maxValue;
-            slider.step = 1;
-            slider.value = currentValues[attr.id];
-
-            const statSpan = document.createElement("div");
-            statSpan.className = "stat-value";
-            statSpan.id = `${attr.id}_value`;
-            statSpan.innerText = currentValues[attr.id];
-
-            const numberWrapper = document.createElement("div");
-            numberWrapper.className = "number-input";
-            const numberInput = document.createElement("input");
-            numberInput.type = "number";
-            numberInput.id = `${attr.id}_num`;
-            numberInput.min = 0;
-            numberInput.max = attr.maxValue;
-            numberInput.step = 1;
-            numberInput.value = currentValues[attr.id];
-            numberInput.style.width = "70px";
-            
-            numberWrapper.appendChild(numberInput);
-            valueRow.appendChild(slider);
-            valueRow.appendChild(statSpan);
-            valueRow.appendChild(numberWrapper);
-
-            // Info de costo en puntos
-            const costInfo = document.createElement("div");
-            costInfo.className = "cost-info";
-            const costSpan = document.createElement("span");
-            costSpan.className = "points-cost";
-            costSpan.id = `${attr.id}_cost`;
-            const currentCost = currentValues[attr.id] * attr.costPerUnit;
-            costSpan.innerText = `${currentCost} pts`;
-            const conversionText = document.createElement("span");
-            conversionText.className = "max-warning";
-            // Mostrar tasa de conversión
-            if (attr.costPerUnit === 1) conversionText.innerText = `1 punto → 1 ${attr.id === "hp" ? "Vida" : "FP"}`;
-            else if (attr.costPerUnit === 5) conversionText.innerText = `5 puntos → +1 Daño`;
-            else conversionText.innerText = `10 puntos → +1 ${attr.name.replace(/[^A-Za-záéíóú]/g, '')}`;
-            
-            costInfo.appendChild(costSpan);
-            costInfo.appendChild(conversionText);
-
-            card.appendChild(header);
-            card.appendChild(valueRow);
-            card.appendChild(costInfo);
             container.appendChild(card);
-
-            // Eventos
-            slider.addEventListener("input", (e) => {
-                let newVal = parseInt(e.target.value, 10);
-                if (isNaN(newVal)) newVal = 0;
-                setAttributeValue(attr.id, newVal);
-            });
-
-            numberInput.addEventListener("change", (e) => {
-                let newVal = parseInt(e.target.value, 10);
-                if (isNaN(newVal)) newVal = 0;
-                setAttributeValue(attr.id, newVal);
-            });
+            const slider = document.getElementById(`${attr.id}_slider`);
+            const numberInput = document.getElementById(`${attr.id}_num`);
+            slider.addEventListener("input", (e) => setAttributeValue(attr.id, parseInt(e.target.value, 10)));
+            numberInput.addEventListener("change", (e) => setAttributeValue(attr.id, parseInt(e.target.value, 10)));
         });
     }
 
-    // Reset completo a 0
     function resetAttributes() {
-        attributes.forEach(attr => {
-            currentValues[attr.id] = 0;
-        });
+        attributes.forEach(attr => { currentValues[attr.id] = 0; });
         updateUI();
-        // además sincronizar valores en los inputs
         attributes.forEach(attr => {
             const slider = document.getElementById(`${attr.id}_slider`);
             if (slider) slider.value = 0;
@@ -570,17 +475,9 @@
         });
     }
 
-    // Inicializar todo, construir UI y actualizar
-    function init() {
-        buildAttributesUI();
-        updateUI();
-        document.getElementById("resetBtn").addEventListener("click", () => {
-            resetAttributes();
-        });
-    }
-
-    init();
+    buildAttributesUI();
+    updateUI();
+    document.getElementById("resetBtn").addEventListener("click", resetAttributes);
 </script>
 </body>
 </html>
-```
