@@ -112,15 +112,41 @@
             flex-wrap: wrap;
             margin: 0.3rem 0;
         }
+        /* Sliders bonitos (como antes) */
         .slider {
             flex: 2;
             min-width: 120px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #2d3e4e;
+            border-radius: 10px;
+            outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            background: #ffb347;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px #ffae42;
+            border: 2px solid white;
         }
         .stat-value-calc {
             background: #0f1a1f;
             padding: 0.2rem 0.8rem;
             border-radius: 2rem;
             font-weight: bold;
+            color: #f5bc70;
+        }
+        .number-input input {
+            background: #09161e;
+            border: 1px solid #ffb34788;
+            color: #ffdd99;
+            border-radius: 2rem;
+            padding: 0.3rem 0.6rem;
+            width: 65px;
+            text-align: center;
         }
         button {
             background: #ffb347;
@@ -138,7 +164,7 @@
             transform: translateY(2px);
             box-shadow: none;
         }
-        .role-group {
+        .role-group, .button-group {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
@@ -176,7 +202,7 @@
             color: #ffdfaa;
             font-weight: bold;
         }
-        .input-group input, .input-group select {
+        .input-group input {
             background: #0f1a1f;
             border: 1px solid #ffb34788;
             color: #ffdd99;
@@ -226,26 +252,22 @@
 
     <div class="attributes-grid" id="attributesContainer"></div>
 
-    <div class="role-group">
+    <div class="button-group">
         <button id="resetBtn">♻️ MÍNIMOS (1)</button>
         <button id="randomBtn">🎲 ALEATORIO</button>
     </div>
+    <div class="role-group">
+        <button id="magoBtn" class="role-btn">🧙 MAGO</button>
+        <button id="luchadorBtn" class="role-btn">⚔️ LUCHADOR</button>
+        <button id="tanqueBtn" class="role-btn">🛡️ TANQUE</button>
+        <button id="asesinoBtn" class="role-btn">🗡️ ASESINO</button>
+    </div>
 
-    <!-- Campos para personalizar la ficha -->
+    <!-- Campos para la ficha (solo nombre e imagen, sin selector de rol) -->
     <div class="char-info">
         <div class="input-group">
             <label>📝 Nombre del personaje</label>
             <input type="text" id="charName" placeholder="Ej: Thorgrim, Elara, etc." value="Aventurero">
-        </div>
-        <div class="input-group">
-            <label>🎭 Seleccionar rol (opcional)</label>
-            <select id="roleSelector">
-                <option value="personalizado">✨ Personalizado (ajusta manualmente)</option>
-                <option value="mago">🧙 Mago</option>
-                <option value="luchador">⚔️ Luchador</option>
-                <option value="tanque">🛡️ Tanque</option>
-                <option value="asesino">🗡️ Asesino</option>
-            </select>
         </div>
         <div class="input-group">
             <label>🖼️ Imagen del personaje (opcional, formato retrato)</label>
@@ -274,7 +296,7 @@
     attributes.forEach(attr => { currentValues[attr.id] = 1; });
 
     let selectedImageData = null;
-    let currentRole = "personalizado";
+    let currentRoleName = "Personalizado";  // para mostrar en la ficha
 
     // Predefinir roles
     const roles = {
@@ -285,28 +307,18 @@
     };
 
     function applyRole(roleKey) {
-        if (roleKey === "personalizado") return;
         const r = roles[roleKey];
         if (r) {
             attributes.forEach(attr => { currentValues[attr.id] = r[attr.id]; });
+            currentRoleName = r.nombre;
             updateAllUI();
-        }
-    }
-
-    function loadRoleFromSelector() {
-        const selector = document.getElementById("roleSelector");
-        const selected = selector.value;
-        currentRole = selected;
-        if (selected !== "personalizado") {
-            applyRole(selected);
         }
     }
 
     function resetToMin() {
         attributes.forEach(attr => { currentValues[attr.id] = attr.minValue; });
+        currentRoleName = "Personalizado";
         updateAllUI();
-        document.getElementById("roleSelector").value = "personalizado";
-        currentRole = "personalizado";
     }
 
     function randomDistribution() {
@@ -338,9 +350,8 @@
                 if (remainingPoints === 0) break;
             }
         }
+        currentRoleName = "Aleatorio";
         updateAllUI();
-        document.getElementById("roleSelector").value = "personalizado";
-        currentRole = "personalizado";
     }
 
     function calculateTotalPoints() {
@@ -377,12 +388,9 @@
         }
         if (currentValues[attrId] !== finalValue) {
             currentValues[attrId] = finalValue;
+            // Si se modifica manualmente, cambiar el nombre del rol a Personalizado
+            currentRoleName = "Personalizado";
             updateAllUI();
-            // Si se modifica manualmente, cambiar el selector a personalizado
-            if (currentRole !== "personalizado") {
-                document.getElementById("roleSelector").value = "personalizado";
-                currentRole = "personalizado";
-            }
         } else {
             updateAllUI();
         }
@@ -443,17 +451,11 @@
         }
     });
 
-    // Generar y descargar ficha (sin previsualización)
+    // Generar y descargar ficha
     async function downloadCharacterSheet() {
         const charName = document.getElementById("charName").value.trim() || "Sin nombre";
-        let roleDisplayName = "Personalizado";
-        if (currentRole !== "personalizado" && roles[currentRole]) {
-            roleDisplayName = roles[currentRole].nombre;
-        } else {
-            roleDisplayName = "Aventurero";
-        }
+        const roleDisplayName = currentRoleName;
 
-        // Crear div temporal para la ficha
         const sheetDiv = document.createElement("div");
         sheetDiv.style.position = "absolute";
         sheetDiv.style.top = "-9999px";
@@ -468,7 +470,7 @@
         sheetDiv.style.backgroundImage = "radial-gradient(circle at 10% 20%, rgba(210,180,140,0.2) 2%, transparent 2.5%)";
         sheetDiv.style.backgroundSize = "25px 25px";
 
-        // Cabecera con imagen (más grande y vertical)
+        // Cabecera con imagen más grande y vertical
         const header = document.createElement("div");
         header.style.display = "flex";
         header.style.alignItems = "center";
@@ -478,7 +480,6 @@
         header.style.paddingBottom = "1rem";
         header.style.flexWrap = "wrap";
 
-        // Contenedor de imagen: tamaño grande y vertical (140x180)
         const imgContainer = document.createElement("div");
         imgContainer.style.width = "140px";
         imgContainer.style.height = "180px";
@@ -512,7 +513,7 @@
         header.appendChild(imgContainer);
         header.appendChild(nameDiv);
 
-        // Atributos (con nombre completo y Ñ)
+        // Atributos
         const statsContainer = document.createElement("div");
         statsContainer.style.display = "flex";
         statsContainer.style.flexDirection = "column";
@@ -528,9 +529,8 @@
             row.style.padding = "0.4rem 0.8rem";
             row.style.borderRadius = "40px";
             row.style.borderLeft = "5px solid #d4af37";
-            // Mostrar el nombre original sin eliminar ñ
             let displayName = attr.name;
-            if (attr.id === "dmg") displayName = "⚔️ DAÑO"; // aseguramos Ñ
+            if (attr.id === "dmg") displayName = "⚔️ DAÑO"; // Aseguramos la Ñ
             row.innerHTML = `
                 <div style="font-weight:bold; display:flex; gap:0.5rem;">${attr.icon} ${displayName}</div>
                 <div style="font-size:1.3rem; font-weight:800; color:#b45f1b; background:#fff0cf; padding:0 10px; border-radius:30px;">${val}</div>
@@ -538,7 +538,6 @@
             statsContainer.appendChild(row);
         });
 
-        // Pie de ficha: sin puntos totales ni texto adicional
         const footerDiv = document.createElement("div");
         footerDiv.style.textAlign = "center";
         footerDiv.style.marginTop = "1rem";
@@ -616,7 +615,10 @@
     // Eventos
     document.getElementById("resetBtn").addEventListener("click", resetToMin);
     document.getElementById("randomBtn").addEventListener("click", randomDistribution);
-    document.getElementById("roleSelector").addEventListener("change", loadRoleFromSelector);
+    document.getElementById("magoBtn").addEventListener("click", () => applyRole("mago"));
+    document.getElementById("luchadorBtn").addEventListener("click", () => applyRole("luchador"));
+    document.getElementById("tanqueBtn").addEventListener("click", () => applyRole("tanque"));
+    document.getElementById("asesinoBtn").addEventListener("click", () => applyRole("asesino"));
     document.getElementById("downloadBtn").addEventListener("click", downloadCharacterSheet);
 
     buildCalculatorUI();
