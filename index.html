@@ -109,7 +109,7 @@
         .attr-name {
             font-weight: bold;
             font-size: 1rem;
-            color: #ffdfaa;  /* Color visible, sin gradiente que pueda ocultarse */
+            color: #ffdfaa;
         }
         .attr-limits {
             font-size: 0.7rem;
@@ -287,17 +287,17 @@
         <button id="asesinoBtn" class="role-btn">🗡️ ASESINO</button>
     </div>
 
-    <!-- Campos para la ficha (solo nombre e imagen) -->
+    <!-- Campos para la ficha -->
     <div class="char-info">
         <div class="input-group">
             <label>📝 Nombre del personaje</label>
             <input type="text" id="charName" placeholder="Ej: Thorgrim, Elara, etc." value="Aventurero">
         </div>
         <div class="input-group">
-            <label>🖼️ Imagen del personaje (opcional, formato retrato)</label>
+            <label>🖼️ Imagen de fondo (se usará como fondo de la ficha)</label>
             <label class="file-label" for="charImageInput">Seleccionar imagen</label>
             <input type="file" id="charImageInput" accept="image/jpeg, image/png, image/webp">
-            <span id="imagePreviewName" style="font-size:0.7rem; color:#bbaa77;">Ninguna imagen seleccionada</span>
+            <span id="imagePreviewName" style="font-size:0.7rem; color:#bbaa77;">Ninguna imagen seleccionada (se usará un fondo neutro)</span>
         </div>
     </div>
 
@@ -456,7 +456,7 @@
         syncInputs();
     }
 
-    // Imagen
+    // Imagen de fondo
     const imageInput = document.getElementById("charImageInput");
     imageInput.addEventListener("change", function(e) {
         const file = e.target.files[0];
@@ -464,115 +464,132 @@
             const reader = new FileReader();
             reader.onload = function(ev) {
                 selectedImageData = ev.target.result;
-                document.getElementById("imagePreviewName").innerText = "✅ Imagen cargada";
+                document.getElementById("imagePreviewName").innerText = "✅ Imagen cargada (se usará como fondo)";
             };
             reader.readAsDataURL(file);
         } else {
             selectedImageData = null;
-            document.getElementById("imagePreviewName").innerText = "Ninguna imagen seleccionada";
+            document.getElementById("imagePreviewName").innerText = "Ninguna imagen seleccionada (fondo neutro)";
         }
     });
 
-    // Generar y descargar ficha
+    // Generar y descargar ficha con imagen de fondo + info inferior
     async function downloadCharacterSheet() {
         const charName = document.getElementById("charName").value.trim() || "Sin nombre";
 
+        // Contenedor principal de la ficha: tamaño fijo 600px de ancho, altura automática según contenido
         const sheetDiv = document.createElement("div");
         sheetDiv.style.position = "absolute";
         sheetDiv.style.top = "-9999px";
         sheetDiv.style.left = "-9999px";
         sheetDiv.style.width = "600px";
-        sheetDiv.style.backgroundColor = "#fef7e0";
-        sheetDiv.style.borderRadius = "2rem";
-        sheetDiv.style.padding = "1.5rem";
-        sheetDiv.style.fontFamily = "'Georgia', 'Times New Roman', serif";
+        sheetDiv.style.backgroundColor = "#fef7e0"; // fallback si no hay imagen
+        sheetDiv.style.borderRadius = "1rem";
+        sheetDiv.style.overflow = "hidden";
         sheetDiv.style.boxShadow = "0 20px 30px rgba(0,0,0,0.3)";
-        sheetDiv.style.border = "2px solid #d4af37";
-        sheetDiv.style.backgroundImage = "radial-gradient(circle at 10% 20%, rgba(210,180,140,0.2) 2%, transparent 2.5%)";
-        sheetDiv.style.backgroundSize = "25px 25px";
-
-        const header = document.createElement("div");
-        header.style.display = "flex";
-        header.style.alignItems = "center";
-        header.style.gap = "1.5rem";
-        header.style.marginBottom = "1.5rem";
-        header.style.borderBottom = "2px solid #c2a144";
-        header.style.paddingBottom = "1rem";
-        header.style.flexWrap = "wrap";
-
-        const imgContainer = document.createElement("div");
-        imgContainer.style.width = "140px";
-        imgContainer.style.height = "180px";
-        imgContainer.style.borderRadius = "20px";
-        imgContainer.style.backgroundColor = "#e9d6a7";
-        imgContainer.style.border = "3px solid #d4af37";
-        imgContainer.style.display = "flex";
-        imgContainer.style.alignItems = "center";
-        imgContainer.style.justifyContent = "center";
-        imgContainer.style.overflow = "hidden";
-        imgContainer.style.flexShrink = "0";
-
+        sheetDiv.style.fontFamily = "'Georgia', 'Times New Roman', serif";
+        
+        // Crear un contenedor relativo para el fondo y el contenido
+        const relativeContainer = document.createElement("div");
+        relativeContainer.style.position = "relative";
+        relativeContainer.style.width = "100%";
+        relativeContainer.style.minHeight = "400px";
+        relativeContainer.style.display = "flex";
+        relativeContainer.style.flexDirection = "column";
+        
+        // --- Imagen de fondo ---
+        const bgImg = document.createElement("img");
         if (selectedImageData) {
-            const img = document.createElement("img");
-            img.src = selectedImageData;
-            img.style.width = "100%";
-            img.style.height = "100%";
-            img.style.objectFit = "cover";
-            imgContainer.appendChild(img);
+            bgImg.src = selectedImageData;
         } else {
-            imgContainer.innerHTML = '<span style="font-size:3rem;">🧙</span>';
+            // Imagen de fondo por defecto (un gradiente sutil)
+            bgImg.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 800'%3E%3Crect width='600' height='800' fill='%23fef7e0'/%3E%3C/svg%3E";
         }
-
+        bgImg.style.width = "100%";
+        bgImg.style.height = "auto";
+        bgImg.style.display = "block";
+        bgImg.style.position = "relative";
+        bgImg.style.zIndex = "0";
+        
+        // --- Capa de contenido (abajo del todo) ---
+        const contentOverlay = document.createElement("div");
+        contentOverlay.style.position = "relative";
+        contentOverlay.style.zIndex = "2";
+        contentOverlay.style.marginTop = "auto"; // empuja hacia abajo
+        contentOverlay.style.backgroundColor = "rgba(255, 248, 225, 0.95)";
+        contentOverlay.style.backdropFilter = "blur(0px)";
+        contentOverlay.style.borderTop = "3px solid #d4af37";
+        contentOverlay.style.borderRadius = "1rem 1rem 0 0";
+        contentOverlay.style.padding = "1rem 1.2rem";
+        contentOverlay.style.boxShadow = "0 -5px 15px rgba(0,0,0,0.1)";
+        
+        // Nombre del personaje
         const nameDiv = document.createElement("div");
-        nameDiv.style.flex = "1";
-        nameDiv.innerHTML = `<div style="font-size:1.8rem; font-weight:bold; color:#3b2a1f;">${escapeHtml(charName)}</div>`;
-
-        header.appendChild(imgContainer);
-        header.appendChild(nameDiv);
-
+        nameDiv.style.textAlign = "center";
+        nameDiv.style.marginBottom = "1rem";
+        nameDiv.style.fontSize = "1.8rem";
+        nameDiv.style.fontWeight = "bold";
+        nameDiv.style.color = "#3b2a1f";
+        nameDiv.style.textShadow = "1px 1px 0 rgba(255,255,200,0.8)";
+        nameDiv.innerText = charName;
+        
+        // Atributos en forma de cuadrícula
         const statsContainer = document.createElement("div");
         statsContainer.style.display = "flex";
         statsContainer.style.flexDirection = "column";
-        statsContainer.style.gap = "0.6rem";
-        statsContainer.style.margin = "1rem 0";
-
+        statsContainer.style.gap = "0.5rem";
+        
         attributes.forEach(attr => {
             const val = currentValues[attr.id];
             const row = document.createElement("div");
             row.style.display = "flex";
             row.style.justifyContent = "space-between";
+            row.style.alignItems = "center";
             row.style.backgroundColor = "rgba(0,0,0,0.05)";
             row.style.padding = "0.4rem 0.8rem";
             row.style.borderRadius = "40px";
-            row.style.borderLeft = "5px solid #d4af37";
+            row.style.borderLeft = "4px solid #d4af37";
             row.innerHTML = `
                 <div style="font-weight:bold; display:flex; gap:0.5rem;">${attr.icon} ${attr.name}</div>
-                <div style="font-size:1.3rem; font-weight:800; color:#b45f1b; background:#fff0cf; padding:0 10px; border-radius:30px;">${val}</div>
+                <div style="font-size:1.2rem; font-weight:800; color:#b45f1b; background:#fff0cf; padding:0 8px; border-radius:30px;">${val}</div>
             `;
             statsContainer.appendChild(row);
         });
-
+        
+        // Pie de ficha (decorativo)
         const footerDiv = document.createElement("div");
         footerDiv.style.textAlign = "center";
-        footerDiv.style.marginTop = "1rem";
-        footerDiv.style.fontSize = "0.7rem";
+        footerDiv.style.marginTop = "0.8rem";
+        footerDiv.style.fontSize = "0.65rem";
         footerDiv.style.color = "#8b6946";
-        footerDiv.style.borderTop = "1px dashed #c2a144";
+        footerDiv.style.borderTop = "1px solid #e0c8a0";
         footerDiv.style.paddingTop = "0.5rem";
         footerDiv.innerHTML = `<span style="background:#2c1e0e; color:#ffdfaa; padding:0.2rem 0.8rem; border-radius:20px;">⚔️🛡️✨</span>`;
-
-        sheetDiv.appendChild(header);
-        sheetDiv.appendChild(statsContainer);
-        sheetDiv.appendChild(footerDiv);
-
+        
+        contentOverlay.appendChild(nameDiv);
+        contentOverlay.appendChild(statsContainer);
+        contentOverlay.appendChild(footerDiv);
+        
+        // Añadir la imagen y el overlay al contenedor relativo
+        relativeContainer.appendChild(bgImg);
+        relativeContainer.appendChild(contentOverlay);
+        sheetDiv.appendChild(relativeContainer);
+        
+        // Ajustar la posición del overlay para que quede siempre al final, incluso si la imagen es más pequeña
+        // Forzamos que el contenedor relativo tenga flex column y el overlay se pegue abajo
+        relativeContainer.style.display = "flex";
+        relativeContainer.style.flexDirection = "column";
+        contentOverlay.style.marginTop = "auto";
+        
         document.body.appendChild(sheetDiv);
-
+        
         try {
             const canvas = await html2canvas(sheetDiv, {
                 scale: 2.5,
-                backgroundColor: "#fef7e0",
+                backgroundColor: null,
                 logging: false,
-                useCORS: true
+                useCORS: true,
+                allowTaint: false
             });
             const link = document.createElement("a");
             const safeName = charName.replace(/[^a-z0-9]/gi, "_");
