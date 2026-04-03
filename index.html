@@ -112,7 +112,6 @@
             flex-wrap: wrap;
             margin: 0.3rem 0;
         }
-        /* Sliders bonitos (como antes) */
         .slider {
             flex: 2;
             min-width: 120px;
@@ -263,7 +262,7 @@
         <button id="asesinoBtn" class="role-btn">🗡️ ASESINO</button>
     </div>
 
-    <!-- Campos para la ficha (solo nombre e imagen, sin selector de rol) -->
+    <!-- Campos para la ficha: solo nombre e imagen -->
     <div class="char-info">
         <div class="input-group">
             <label>📝 Nombre del personaje</label>
@@ -284,40 +283,37 @@
 <script>
     // ---------- ATRIBUTOS Y LÓGICA ----------
     const attributes = [
-        { id: "hp", name: "❤️ VIDA", maxValue: 80, costPerUnit: 1, minValue: 1, icon: "❤️" },
-        { id: "dmg", name: "⚔️ DAÑO", maxValue: 8, costPerUnit: 5, minValue: 1, icon: "⚔️" },
-        { id: "armor", name: "🛡️ ARMADURA", maxValue: 6, costPerUnit: 10, minValue: 1, icon: "🛡️" },
-        { id: "steps", name: "👟 PASOS", maxValue: 8, costPerUnit: 10, minValue: 1, icon: "👟" },
-        { id: "fp", name: "✨ FP", maxValue: 60, costPerUnit: 1, minValue: 1, icon: "✨" },
-        { id: "range", name: "🏹 ALCANCE", maxValue: 8, costPerUnit: 10, minValue: 1, icon: "🏹" }
+        { id: "hp", name: "❤️ VIDA", maxValue: 80, costPerUnit: 1, minValue: 1 },
+        { id: "dmg", name: "⚔️ DAÑO", maxValue: 8, costPerUnit: 5, minValue: 1 },
+        { id: "armor", name: "🛡️ ARMADURA", maxValue: 6, costPerUnit: 10, minValue: 1 },
+        { id: "steps", name: "👟 PASOS", maxValue: 8, costPerUnit: 10, minValue: 1 },
+        { id: "fp", name: "✨ FP", maxValue: 60, costPerUnit: 1, minValue: 1 },
+        { id: "range", name: "🏹 ALCANCE", maxValue: 8, costPerUnit: 10, minValue: 1 }
     ];
 
     let currentValues = {};
     attributes.forEach(attr => { currentValues[attr.id] = 1; });
 
     let selectedImageData = null;
-    let currentRoleName = "Personalizado";  // para mostrar en la ficha
 
-    // Predefinir roles
+    // Predefinir roles (solo para modificar atributos, no se muestran en la ficha)
     const roles = {
-        mago: { hp:20, dmg:5, armor:1, steps:2, fp:55, range:7, nombre: "🧙 Mago" },
-        luchador: { hp:45, dmg:7, armor:4, steps:5, fp:10, range:2, nombre: "⚔️ Luchador" },
-        tanque: { hp:75, dmg:2, armor:6, steps:4, fp:5, range:1, nombre: "🛡️ Tanque" },
-        asesino: { hp:15, dmg:8, armor:1, steps:8, fp:5, range:5, nombre: "🗡️ Asesino" }
+        mago: { hp:20, dmg:5, armor:1, steps:2, fp:55, range:7 },
+        luchador: { hp:45, dmg:7, armor:4, steps:5, fp:10, range:2 },
+        tanque: { hp:75, dmg:2, armor:6, steps:4, fp:5, range:1 },
+        asesino: { hp:15, dmg:8, armor:1, steps:8, fp:5, range:5 }
     };
 
     function applyRole(roleKey) {
         const r = roles[roleKey];
         if (r) {
             attributes.forEach(attr => { currentValues[attr.id] = r[attr.id]; });
-            currentRoleName = r.nombre;
             updateAllUI();
         }
     }
 
     function resetToMin() {
         attributes.forEach(attr => { currentValues[attr.id] = attr.minValue; });
-        currentRoleName = "Personalizado";
         updateAllUI();
     }
 
@@ -350,7 +346,6 @@
                 if (remainingPoints === 0) break;
             }
         }
-        currentRoleName = "Aleatorio";
         updateAllUI();
     }
 
@@ -388,8 +383,6 @@
         }
         if (currentValues[attrId] !== finalValue) {
             currentValues[attrId] = finalValue;
-            // Si se modifica manualmente, cambiar el nombre del rol a Personalizado
-            currentRoleName = "Personalizado";
             updateAllUI();
         } else {
             updateAllUI();
@@ -451,10 +444,9 @@
         }
     });
 
-    // Generar y descargar ficha
+    // Generar y descargar ficha (sin rol, y sin duplicar emojis)
     async function downloadCharacterSheet() {
         const charName = document.getElementById("charName").value.trim() || "Sin nombre";
-        const roleDisplayName = currentRoleName;
 
         const sheetDiv = document.createElement("div");
         sheetDiv.style.position = "absolute";
@@ -470,7 +462,7 @@
         sheetDiv.style.backgroundImage = "radial-gradient(circle at 10% 20%, rgba(210,180,140,0.2) 2%, transparent 2.5%)";
         sheetDiv.style.backgroundSize = "25px 25px";
 
-        // Cabecera con imagen más grande y vertical
+        // Cabecera con imagen y nombre (sin rol)
         const header = document.createElement("div");
         header.style.display = "flex";
         header.style.alignItems = "center";
@@ -505,15 +497,16 @@
 
         const nameDiv = document.createElement("div");
         nameDiv.style.flex = "1";
-        nameDiv.innerHTML = `
-            <div style="font-size:1.8rem; font-weight:bold; color:#3b2a1f;">${escapeHtml(charName)}</div>
-            <div style="font-size:1rem; color:#7a5a3a; margin-top:0.3rem;">${escapeHtml(roleDisplayName)}</div>
-        `;
+        nameDiv.innerHTML = `<div style="font-size:1.8rem; font-weight:bold; color:#3b2a1f;">${escapeHtml(charName)}</div>`;
 
         header.appendChild(imgContainer);
         header.appendChild(nameDiv);
 
-        // Atributos
+        // Atributos: mostramos solo el nombre del atributo SIN duplicar el emoji.
+        // Usaremos el nombre limpio (quitamos el emoji del principio si existe) o mejor: definimos un texto sin emoji.
+        // Para mantener la coherencia, mostraremos por ejemplo "VIDA" en lugar de "❤️ VIDA". Pero el usuario quiere el emoji una sola vez.
+        // Como el nombre del atributo ya incluye el emoji (ej: "❤️ VIDA"), lo mostraremos tal cual, sin añadir otro icono.
+        // Pero antes se duplicaba porque se añadía attr.icon + displayName. Ahora solo mostraremos attr.name (que ya tiene el emoji).
         const statsContainer = document.createElement("div");
         statsContainer.style.display = "flex";
         statsContainer.style.flexDirection = "column";
@@ -529,10 +522,9 @@
             row.style.padding = "0.4rem 0.8rem";
             row.style.borderRadius = "40px";
             row.style.borderLeft = "5px solid #d4af37";
-            let displayName = attr.name;
-            if (attr.id === "dmg") displayName = "⚔️ DAÑO"; // Aseguramos la Ñ
+            // Usamos attr.name que ya contiene el emoji (ej: "❤️ VIDA") sin duplicar
             row.innerHTML = `
-                <div style="font-weight:bold; display:flex; gap:0.5rem;">${attr.icon} ${displayName}</div>
+                <div style="font-weight:bold;">${attr.name}</div>
                 <div style="font-size:1.3rem; font-weight:800; color:#b45f1b; background:#fff0cf; padding:0 10px; border-radius:30px;">${val}</div>
             `;
             statsContainer.appendChild(row);
