@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Calculadora de Atributos - Rol</title>
+    <title>Calculadora de Atributos - Roles</title>
     <style>
         * {
             box-sizing: border-box;
@@ -236,6 +236,13 @@
             flex-wrap: wrap;
             margin-top: 0.5rem;
         }
+        .role-group {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 0.8rem;
+            justify-content: center;
+        }
         button {
             background: #ffb347;
             border: none;
@@ -255,6 +262,10 @@
             transform: translateY(2px);
             box-shadow: 0 1px 0 #a05e15;
         }
+        .role-btn {
+            background: #3a6ea5;
+            box-shadow: 0 4px 0 #1e3a5f;
+        }
         footer {
             font-size: 0.65rem;
             text-align: center;
@@ -272,14 +283,14 @@
             .number-input input { width: 90%; max-width: 120px; margin: 0 auto; }
             .attr-header { flex-direction: column; align-items: flex-start; }
             .cost-info { flex-direction: column; align-items: flex-start; }
-            .button-group { flex-direction: column; }
+            .button-group, .role-group { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 <div class="calculator">
     <h1>⚔️ FORJADOR DE HÉROES ⚔️</h1>
-    <div style="text-align: center;"><span class="sub">Distribuye 200 puntos de atributo (mínimo 1 en cada uno)</span></div>
+    <div style="text-align: center;"><span class="sub">Distribuye 200 puntos (mínimo 1 por atributo)</span></div>
 
     <div class="points-panel">
         <div class="total-box">
@@ -290,7 +301,7 @@
             <div class="total-label">PUNTOS RESTANTES</div>
             <div class="total-value" id="remainingPointsDisplay">200</div>
         </div>
-        <div class="warning" id="warningMsg">✨ Ajusta los atributos (mínimo 1)</div>
+        <div class="warning" id="warningMsg">✨ Ajusta los atributos o elige un rol</div>
     </div>
     <div class="progress-container">
         <div class="progress-bar" id="progressBar"></div>
@@ -302,6 +313,14 @@
         <button id="resetBtn">♻️ VALORES MÍNIMOS (1)</button>
         <button id="randomBtn">🎲 DISTRIBUIR ALEATORIO</button>
     </div>
+    
+    <div class="role-group">
+        <button id="magoBtn" class="role-btn">🧙 MAGO</button>
+        <button id="luchadorBtn" class="role-btn">⚔️ LUCHADOR</button>
+        <button id="tanqueBtn" class="role-btn">🛡️ TANQUE</button>
+        <button id="asesinoBtn" class="role-btn">🗡️ ASESINO</button>
+    </div>
+    
     <footer>Vida (1:1) · Daño (5:1) · Armadura (10:1) · Pasos (10:1) · FP (1:1) · Alcance (10:1)</footer>
 </div>
 
@@ -324,9 +343,79 @@
         });
         updateUI();
         syncInputsWithCurrent();
+        setWarningMessage("📌 Valores mínimos restablecidos (1 en cada atributo).", "#f1c40f");
     }
 
-    // Sincronizar sliders e inputs con currentValues
+    // Cargar un conjunto predefinido de valores (rol)
+    function loadPreset(values) {
+        for (let [id, val] of Object.entries(values)) {
+            if (currentValues.hasOwnProperty(id)) {
+                currentValues[id] = Math.min(attributes.find(a => a.id === id).maxValue, Math.max(attributes.find(a => a.id === id).minValue, val));
+            }
+        }
+        updateUI();
+        syncInputsWithCurrent();
+        // Verificar que sume 200 (puede haber redondeos, pero nuestros presets están ajustados)
+        const total = calculateTotalPoints();
+        if (total !== 200) {
+            setWarningMessage(`⚠️ El preset suma ${total} puntos. Ajusta manualmente para llegar a 200.`, "#ffaa88");
+        } else {
+            setWarningMessage("✅ Preset de rol cargado correctamente (200 puntos).", "#b9ffb9");
+        }
+    }
+
+    function setWarningMessage(msg, color) {
+        const warningDiv = document.getElementById("warningMsg");
+        warningDiv.innerHTML = msg;
+        warningDiv.style.color = color;
+        setTimeout(() => {
+            if (calculateTotalPoints() === 200) {
+                warningDiv.innerHTML = "✅ ¡PUNTOS JUSTOS! Héroe listo para la aventura ✅";
+                warningDiv.style.color = "#b9ffb9";
+            } else {
+                const remaining = 200 - calculateTotalPoints();
+                warningDiv.innerHTML = `📌 Te quedan ${remaining} puntos para distribuir. (Mínimo 1 por atributo)`;
+                warningDiv.style.color = "#f1c40f";
+            }
+        }, 3000);
+    }
+
+    // Definición de roles (valores exactos que suman 200)
+    const roles = {
+        mago: {
+            hp: 20,   // 20 pts
+            dmg: 5,   // 25 pts
+            armor: 1, // 10 pts
+            steps: 2, // 20 pts
+            fp: 55,   // 55 pts
+            range: 7  // 70 pts
+        }, // Total: 20+25+10+20+55+70 = 200
+        luchador: {
+            hp: 45,   // 45
+            dmg: 7,   // 35
+            armor: 4, // 40
+            steps: 5, // 50
+            fp: 10,   // 10
+            range: 2  // 20
+        }, // 45+35+40+50+10+20 = 200
+        tanque: {
+            hp: 75,   // 75
+            dmg: 2,   // 10
+            armor: 6, // 60
+            steps: 4, // 40
+            fp: 5,    // 5
+            range: 1  // 10
+        }, // 75+10+60+40+5+10 = 200
+        asesino: {
+            hp: 15,   // 15
+            dmg: 8,   // 40
+            armor: 1, // 10
+            steps: 8, // 80
+            fp: 5,    // 5
+            range: 5  // 50
+        } // 15+40+10+80+5+50 = 200
+    };
+
     function syncInputsWithCurrent() {
         attributes.forEach(attr => {
             const val = currentValues[attr.id];
@@ -351,18 +440,12 @@
         const attr = attributes.find(a => a.id === attrId);
         if (!attr) return;
         
-        // Validar mínimo (1)
         if (newRawValue < attr.minValue) {
-            document.getElementById("warningMsg").innerHTML = `⚠️ El mínimo para ${attr.name} es ${attr.minValue}. No se puede reducir.`;
-            document.getElementById("warningMsg").style.color = "#ffaa88";
-            // No cambiar el valor, solo mostrar mensaje
-            // Forzar que el slider/input vuelvan al valor actual
-            setTimeout(() => {
-                const slider = document.getElementById(`${attr.id}_slider`);
-                if (slider) slider.value = currentValues[attr.id];
-                const numInput = document.getElementById(`${attr.id}_num`);
-                if (numInput) numInput.value = currentValues[attr.id];
-            }, 10);
+            setWarningMessage(`⚠️ El mínimo para ${attr.name} es ${attr.minValue}. No se puede reducir.`, "#ffaa88");
+            const slider = document.getElementById(`${attr.id}_slider`);
+            if (slider) slider.value = currentValues[attr.id];
+            const numInput = document.getElementById(`${attr.id}_num`);
+            if (numInput) numInput.value = currentValues[attr.id];
             return;
         }
         
@@ -394,7 +477,7 @@
             currentValues[attrId] = finalValue;
             updateUI();
         } else {
-            updateUI(); // para refrescar mensajes
+            updateUI();
         }
     }
 
@@ -418,7 +501,6 @@
             warningDiv.style.color = "#f1c40f";
         }
         
-        // Actualizar cada tarjeta
         attributes.forEach(attr => {
             const val = currentValues[attr.id];
             const spent = val * attr.costPerUnit;
@@ -433,28 +515,22 @@
         });
     }
 
-    // Distribución aleatoria respetando máximos y puntos disponibles
+    // Distribución aleatoria mejorada (respeta mínimos y máximos)
     function randomDistribution() {
-        // Primero poner valores mínimos (1)
-        resetToBase();
-        let remainingPoints = 200 - calculateTotalPoints(); // 163 al inicio
+        resetToBase(); // empezar desde 1 en cada atributo
+        let remainingPoints = 200 - calculateTotalPoints(); // 163 tras reset
         
-        // Lista de índices de atributos
-        let indices = attributes.map((_, i) => i);
         let attempts = 0;
-        const maxAttempts = 2000;
+        const maxAttempts = 3000;
         
-        // Mezclar para evitar sesgos
         while (remainingPoints > 0 && attempts < maxAttempts) {
-            // Barajar copia de índices para elegir aleatoriamente
-            let shuffled = [...indices];
+            let shuffled = [...attributes];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
             }
             let changed = false;
-            for (let idx of shuffled) {
-                const attr = attributes[idx];
+            for (let attr of shuffled) {
                 const currentVal = currentValues[attr.id];
                 if (currentVal < attr.maxValue) {
                     const cost = attr.costPerUnit;
@@ -462,15 +538,15 @@
                         currentValues[attr.id]++;
                         remainingPoints -= cost;
                         changed = true;
-                        break; // reiniciar el ciclo while
+                        break;
                     }
                 }
             }
-            if (!changed) break; // no se puede incrementar más ningún atributo
+            if (!changed) break;
             attempts++;
         }
         
-        // Si aún sobran puntos (por ejemplo 3 puntos y solo quedan atributos con coste 5 o 10), intentar con atributos de coste 1 (Vida o FP)
+        // Si aún sobran puntos (p.ej. 3 y solo quedan atributos de coste 5 o 10), usar Vida/FP (coste 1)
         if (remainingPoints > 0) {
             const cheapAttrs = attributes.filter(a => a.costPerUnit === 1 && currentValues[a.id] < a.maxValue);
             for (let attr of cheapAttrs) {
@@ -482,17 +558,14 @@
             }
         }
         
-        // Si aún quedan puntos (raro) se ignoran, pero actualizamos UI
         updateUI();
         syncInputsWithCurrent();
-        document.getElementById("warningMsg").innerHTML = "🎲 Distribución aleatoria completada.";
-        setTimeout(() => {
-            if (calculateTotalPoints() !== 200) {
-                document.getElementById("warningMsg").innerHTML = `⚠️ Distribución aleatoria: se usaron ${200-remainingPoints} de 200 puntos. Ajusta manualmente.`;
-            } else {
-                document.getElementById("warningMsg").innerHTML = "✅ Distribución aleatoria exitosa (200 puntos).";
-            }
-        }, 1500);
+        const finalTotal = calculateTotalPoints();
+        if (finalTotal === 200) {
+            setWarningMessage("🎲 Distribución aleatoria completada (200 puntos).", "#b9ffb9");
+        } else {
+            setWarningMessage(`🎲 Distribución aleatoria: se asignaron ${finalTotal} puntos. Ajusta manualmente.`, "#ffaa88");
+        }
     }
 
     function buildAttributesUI() {
@@ -525,13 +598,15 @@
         });
     }
 
-    // Inicializar con valores mínimos (1)
     function init() {
         buildAttributesUI();
-        resetToBase();  // pone todo a 1
-        updateUI();
+        resetToBase(); // valores iniciales a 1
         document.getElementById("resetBtn").addEventListener("click", () => resetToBase());
         document.getElementById("randomBtn").addEventListener("click", () => randomDistribution());
+        document.getElementById("magoBtn").addEventListener("click", () => loadPreset(roles.mago));
+        document.getElementById("luchadorBtn").addEventListener("click", () => loadPreset(roles.luchador));
+        document.getElementById("tanqueBtn").addEventListener("click", () => loadPreset(roles.tanque));
+        document.getElementById("asesinoBtn").addEventListener("click", () => loadPreset(roles.asesino));
     }
     
     init();
