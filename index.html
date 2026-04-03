@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Calculadora de Atributos - Roles</title>
+    <title>Calculadora de Atributos + Ficha descargable</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -15,26 +16,25 @@
             font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
             background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
             min-height: 100vh;
-            padding: 16px;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        .calculator {
+        .container {
             max-width: 800px;
             width: 100%;
-            margin: 0 auto;
             background: rgba(10, 20, 30, 0.75);
             backdrop-filter: blur(8px);
             border-radius: 2rem;
             padding: 1.5rem;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
             border: 1px solid rgba(255,215,140,0.3);
         }
 
         h1 {
-            font-size: clamp(1.5rem, 6vw, 2.2rem);
+            font-size: clamp(1.5rem, 6vw, 2rem);
             text-align: center;
             background: linear-gradient(135deg, #FFE6B0, #FFB347);
             background-clip: text;
@@ -46,529 +46,545 @@
         .sub {
             text-align: center;
             color: #bcd0e0;
-            font-size: clamp(0.75rem, 3vw, 0.9rem);
-            border-bottom: 1px dashed rgba(255,215,150,0.4);
-            display: inline-block;
-            width: auto;
-            margin: 0 auto 1.2rem auto;
-            padding-bottom: 0.3rem;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
         }
 
         .points-panel {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.5);
             border-radius: 2rem;
-            padding: 0.9rem 1rem;
-            margin-bottom: 1.5rem;
+            padding: 0.8rem;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            align-items: center;
-            gap: 0.8rem;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
         }
-
         .total-box, .remaining {
             background: #00000066;
             border-radius: 2rem;
-            padding: 0.4rem 1rem;
+            padding: 0.3rem 1rem;
             text-align: center;
-            flex: 1;
-            min-width: 110px;
         }
-
-        .total-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #9bb7d4;
-        }
-
         .total-value {
-            font-size: clamp(1.4rem, 5vw, 2rem);
+            font-size: 1.6rem;
             font-weight: 800;
-            line-height: 1.2;
             color: #FFD966;
         }
-
-        .remaining .total-value {
-            color: #6fcf97;
-        }
-
         .warning {
             font-size: 0.7rem;
             background: #2c1e0e80;
             border-radius: 2rem;
-            padding: 0.4rem 0.8rem;
+            padding: 0.3rem 0.8rem;
             text-align: center;
-            flex: 2;
-            min-width: 140px;
-            color: #f1c40f;
         }
-
         .progress-container {
             background: #2c3e2e4d;
             border-radius: 2rem;
-            height: 10px;
-            width: 100%;
-            margin: 0.5rem 0 1rem;
-            overflow: hidden;
+            height: 8px;
+            margin-bottom: 1rem;
         }
         .progress-bar {
             background: linear-gradient(90deg, #f3b33d, #ffdd77);
             width: 0%;
             height: 100%;
             border-radius: 2rem;
-            transition: width 0.2s;
         }
-
         .attributes-grid {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            margin: 1.5rem 0 1rem;
+            gap: 0.8rem;
+            margin: 1rem 0;
         }
-
         .attr-card {
-            background: rgba(15, 25, 35, 0.85);
+            background: rgba(15,25,35,0.85);
             border-radius: 1.5rem;
-            padding: 0.9rem 1rem;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,215,140,0.2);
+            padding: 0.7rem;
         }
-
         .attr-header {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
-            flex-wrap: wrap;
-            margin-bottom: 0.5rem;
-            gap: 0.3rem;
         }
-
-        .attr-name {
-            font-weight: bold;
-            font-size: clamp(1.1rem, 4.5vw, 1.3rem);
-            background: linear-gradient(120deg, #f5e7c8, #ffcf8a);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        .attr-limits {
-            font-size: 0.65rem;
-            background: #00000055;
-            padding: 0.2rem 0.7rem;
-            border-radius: 2rem;
-            color: #bbd4ff;
-        }
-
         .value-row {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
-            margin: 0.5rem 0 0.3rem;
+            margin: 0.3rem 0;
         }
-
         .slider {
             flex: 2;
-            min-width: 130px;
-            height: 6px;
-            -webkit-appearance: none;
-            background: #2d3e4e;
-            border-radius: 10px;
+            min-width: 120px;
         }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 22px;
-            height: 22px;
-            background: #ffb347;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 6px #ffae42;
-            border: 2px solid white;
-        }
-
-        .stat-value {
+        .stat-value-calc {
             background: #0f1a1f;
-            min-width: 55px;
-            text-align: center;
-            padding: 0.4rem 0;
-            border-radius: 2rem;
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #f5bc70;
-            border: 1px solid #ffb34766;
-        }
-
-        .number-input input {
-            background: #09161e;
-            border: 1px solid #ffb34788;
-            color: #ffdd99;
-            border-radius: 2rem;
-            padding: 0.4rem 0.3rem;
-            width: 70px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-
-        .cost-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.6rem;
-            font-size: 0.7rem;
-            color: #aac8e6;
-        }
-        .points-cost {
-            background: #00000060;
             padding: 0.2rem 0.8rem;
             border-radius: 2rem;
             font-weight: bold;
-            color: #e6c384;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-            margin-top: 0.5rem;
-        }
-        .role-group {
-            display: flex;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-            margin-top: 0.8rem;
-            justify-content: center;
         }
         button {
             background: #ffb347;
             border: none;
             font-weight: bold;
-            padding: 0.8rem 1rem;
+            padding: 0.6rem;
             border-radius: 3rem;
-            color: #1e2a32;
-            font-size: 1rem;
             cursor: pointer;
-            flex: 1;
             font-family: inherit;
-            box-shadow: 0 4px 0 #a05e15;
+            box-shadow: 0 3px 0 #a05e15;
             transform: translateY(-2px);
             transition: 0.05s linear;
         }
         button:active {
             transform: translateY(2px);
-            box-shadow: 0 1px 0 #a05e15;
+            box-shadow: none;
+        }
+        .role-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
         }
         .role-btn {
             background: #3a6ea5;
-            box-shadow: 0 4px 0 #1e3a5f;
+            box-shadow: 0 3px 0 #1e3a5f;
+            color: white;
+        }
+        .download-btn {
+            background: #2c6e2c;
+            box-shadow: 0 3px 0 #1a451a;
+            color: white;
+            width: 100%;
+            margin-top: 0.8rem;
+            font-size: 1.1rem;
+        }
+        .char-info {
+            background: rgba(0,0,0,0.4);
+            border-radius: 1.5rem;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .input-group label {
+            font-size: 0.8rem;
+            color: #ffdfaa;
+            font-weight: bold;
+        }
+        .input-group input, .input-group select {
+            background: #0f1a1f;
+            border: 1px solid #ffb34788;
+            color: #ffdd99;
+            border-radius: 1.5rem;
+            padding: 0.5rem 1rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .file-label {
+            background: #3a6ea5;
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+        input[type="file"] {
+            display: none;
         }
         footer {
             font-size: 0.65rem;
             text-align: center;
             color: #6e8eae;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
         }
-
         @media (max-width: 550px) {
             body { padding: 10px; }
-            .calculator { padding: 1rem; }
-            .points-panel { flex-direction: column; align-items: stretch; }
+            .container { padding: 1rem; }
             .value-row { flex-direction: column; align-items: stretch; }
             .slider { width: 100%; }
-            .stat-value { text-align: center; width: 100%; }
-            .number-input input { width: 90%; max-width: 120px; margin: 0 auto; }
-            .attr-header { flex-direction: column; align-items: flex-start; }
-            .cost-info { flex-direction: column; align-items: flex-start; }
-            .button-group, .role-group { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-<div class="calculator">
+<div class="container">
     <h1>⚔️ FORJADOR DE HÉROES ⚔️</h1>
-    <div style="text-align: center;"><span class="sub">Distribuye 200 puntos (mínimo 1 por atributo)</span></div>
+    <div class="sub">Distribuye 200 puntos (mínimo 1)</div>
 
     <div class="points-panel">
-        <div class="total-box">
-            <div class="total-label">PUNTOS TOTALES</div>
-            <div class="total-value" id="totalPointsDisplay">200</div>
-        </div>
-        <div class="remaining">
-            <div class="total-label">PUNTOS RESTANTES</div>
-            <div class="total-value" id="remainingPointsDisplay">200</div>
-        </div>
-        <div class="warning" id="warningMsg">✨ Ajusta los atributos o elige un rol</div>
+        <div class="total-box"><div class="total-label">PUNTOS TOTALES</div><div class="total-value" id="totalPointsDisplay">200</div></div>
+        <div class="remaining"><div class="total-label">RESTANTES</div><div class="total-value" id="remainingPointsDisplay">200</div></div>
+        <div class="warning" id="warningMsg">✨ Ajusta atributos</div>
     </div>
-    <div class="progress-container">
-        <div class="progress-bar" id="progressBar"></div>
-    </div>
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
 
     <div class="attributes-grid" id="attributesContainer"></div>
 
-    <div class="button-group">
-        <button id="resetBtn">♻️ VALORES MÍNIMOS (1)</button>
-        <button id="randomBtn">🎲 DISTRIBUIR ALEATORIO</button>
-    </div>
-    
     <div class="role-group">
-        <button id="magoBtn" class="role-btn">🧙 MAGO</button>
-        <button id="luchadorBtn" class="role-btn">⚔️ LUCHADOR</button>
-        <button id="tanqueBtn" class="role-btn">🛡️ TANQUE</button>
-        <button id="asesinoBtn" class="role-btn">🗡️ ASESINO</button>
+        <button id="resetBtn">♻️ MÍNIMOS (1)</button>
+        <button id="randomBtn">🎲 ALEATORIO</button>
     </div>
-    
+
+    <!-- Campos para personalizar la ficha -->
+    <div class="char-info">
+        <div class="input-group">
+            <label>📝 Nombre del personaje</label>
+            <input type="text" id="charName" placeholder="Ej: Thorgrim, Elara, etc." value="Aventurero">
+        </div>
+        <div class="input-group">
+            <label>🎭 Seleccionar rol (opcional)</label>
+            <select id="roleSelector">
+                <option value="personalizado">✨ Personalizado (ajusta manualmente)</option>
+                <option value="mago">🧙 Mago</option>
+                <option value="luchador">⚔️ Luchador</option>
+                <option value="tanque">🛡️ Tanque</option>
+                <option value="asesino">🗡️ Asesino</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>🖼️ Imagen del personaje (opcional, formato retrato)</label>
+            <label class="file-label" for="charImageInput">Seleccionar imagen</label>
+            <input type="file" id="charImageInput" accept="image/jpeg, image/png, image/webp">
+            <span id="imagePreviewName" style="font-size:0.7rem; color:#bbaa77;">Ninguna imagen seleccionada</span>
+        </div>
+    </div>
+
+    <button id="downloadBtn" class="download-btn">📸 DESCARGAR FICHA COMO IMAGEN</button>
     <footer>Vida (1:1) · Daño (5:1) · Armadura (10:1) · Pasos (10:1) · FP (1:1) · Alcance (10:1)</footer>
 </div>
 
 <script>
+    // ---------- ATRIBUTOS Y LÓGICA ----------
     const attributes = [
-        { id: "hp", name: "❤️ VIDA", maxValue: 80, costPerUnit: 1, minValue: 1 },
-        { id: "dmg", name: "⚔️ DAÑO", maxValue: 8, costPerUnit: 5, minValue: 1 },
-        { id: "armor", name: "🛡️ ARMADURA", maxValue: 6, costPerUnit: 10, minValue: 1 },
-        { id: "steps", name: "👟 PASOS", maxValue: 8, costPerUnit: 10, minValue: 1 },
-        { id: "fp", name: "✨ FP", maxValue: 60, costPerUnit: 1, minValue: 1 },
-        { id: "range", name: "🏹 ALCANCE", maxValue: 8, costPerUnit: 10, minValue: 1 }
+        { id: "hp", name: "❤️ VIDA", maxValue: 80, costPerUnit: 1, minValue: 1, icon: "❤️" },
+        { id: "dmg", name: "⚔️ DAÑO", maxValue: 8, costPerUnit: 5, minValue: 1, icon: "⚔️" },
+        { id: "armor", name: "🛡️ ARMADURA", maxValue: 6, costPerUnit: 10, minValue: 1, icon: "🛡️" },
+        { id: "steps", name: "👟 PASOS", maxValue: 8, costPerUnit: 10, minValue: 1, icon: "👟" },
+        { id: "fp", name: "✨ FP", maxValue: 60, costPerUnit: 1, minValue: 1, icon: "✨" },
+        { id: "range", name: "🏹 ALCANCE", maxValue: 8, costPerUnit: 10, minValue: 1, icon: "🏹" }
     ];
 
     let currentValues = {};
+    attributes.forEach(attr => { currentValues[attr.id] = 1; });
 
-    // Inicializar todos los atributos a 1 (mínimo)
-    function resetToBase() {
-        attributes.forEach(attr => {
-            currentValues[attr.id] = attr.minValue;
-        });
-        updateUI();
-        syncInputsWithCurrent();
-        setWarningMessage("📌 Valores mínimos restablecidos (1 en cada atributo).", "#f1c40f");
-    }
+    let selectedImageData = null;
+    let currentRole = "personalizado";
 
-    // Cargar un conjunto predefinido de valores (rol)
-    function loadPreset(values) {
-        for (let [id, val] of Object.entries(values)) {
-            if (currentValues.hasOwnProperty(id)) {
-                currentValues[id] = Math.min(attributes.find(a => a.id === id).maxValue, Math.max(attributes.find(a => a.id === id).minValue, val));
-            }
-        }
-        updateUI();
-        syncInputsWithCurrent();
-        // Verificar que sume 200 (puede haber redondeos, pero nuestros presets están ajustados)
-        const total = calculateTotalPoints();
-        if (total !== 200) {
-            setWarningMessage(`⚠️ El preset suma ${total} puntos. Ajusta manualmente para llegar a 200.`, "#ffaa88");
-        } else {
-            setWarningMessage("✅ Preset de rol cargado correctamente (200 puntos).", "#b9ffb9");
-        }
-    }
-
-    function setWarningMessage(msg, color) {
-        const warningDiv = document.getElementById("warningMsg");
-        warningDiv.innerHTML = msg;
-        warningDiv.style.color = color;
-        setTimeout(() => {
-            if (calculateTotalPoints() === 200) {
-                warningDiv.innerHTML = "✅ ¡PUNTOS JUSTOS! Héroe listo para la aventura ✅";
-                warningDiv.style.color = "#b9ffb9";
-            } else {
-                const remaining = 200 - calculateTotalPoints();
-                warningDiv.innerHTML = `📌 Te quedan ${remaining} puntos para distribuir. (Mínimo 1 por atributo)`;
-                warningDiv.style.color = "#f1c40f";
-            }
-        }, 3000);
-    }
-
-    // Definición de roles (valores exactos que suman 200)
+    // Predefinir roles
     const roles = {
-        mago: {
-            hp: 20,   // 20 pts
-            dmg: 5,   // 25 pts
-            armor: 1, // 10 pts
-            steps: 2, // 20 pts
-            fp: 55,   // 55 pts
-            range: 7  // 70 pts
-        }, // Total: 20+25+10+20+55+70 = 200
-        luchador: {
-            hp: 45,   // 45
-            dmg: 7,   // 35
-            armor: 4, // 40
-            steps: 5, // 50
-            fp: 10,   // 10
-            range: 2  // 20
-        }, // 45+35+40+50+10+20 = 200
-        tanque: {
-            hp: 75,   // 75
-            dmg: 2,   // 10
-            armor: 6, // 60
-            steps: 4, // 40
-            fp: 5,    // 5
-            range: 1  // 10
-        }, // 75+10+60+40+5+10 = 200
-        asesino: {
-            hp: 15,   // 15
-            dmg: 8,   // 40
-            armor: 1, // 10
-            steps: 8, // 80
-            fp: 5,    // 5
-            range: 5  // 50
-        } // 15+40+10+80+5+50 = 200
+        mago: { hp:20, dmg:5, armor:1, steps:2, fp:55, range:7, nombre: "🧙 Mago" },
+        luchador: { hp:45, dmg:7, armor:4, steps:5, fp:10, range:2, nombre: "⚔️ Luchador" },
+        tanque: { hp:75, dmg:2, armor:6, steps:4, fp:5, range:1, nombre: "🛡️ Tanque" },
+        asesino: { hp:15, dmg:8, armor:1, steps:8, fp:5, range:5, nombre: "🗡️ Asesino" }
     };
 
-    function syncInputsWithCurrent() {
-        attributes.forEach(attr => {
-            const val = currentValues[attr.id];
-            const slider = document.getElementById(`${attr.id}_slider`);
-            if (slider && slider.value != val) slider.value = val;
-            const numInput = document.getElementById(`${attr.id}_num`);
-            if (numInput && numInput.value != val) numInput.value = val;
-            const valueSpan = document.getElementById(`${attr.id}_value`);
-            if (valueSpan) valueSpan.innerText = val;
-            const costSpan = document.getElementById(`${attr.id}_cost`);
-            if (costSpan) costSpan.innerText = `${val * attr.costPerUnit} pts`;
-        });
-    }
-
-    function calculateTotalPoints() {
-        let total = 0;
-        attributes.forEach(attr => { total += currentValues[attr.id] * attr.costPerUnit; });
-        return total;
-    }
-
-    function setAttributeValue(attrId, newRawValue) {
-        const attr = attributes.find(a => a.id === attrId);
-        if (!attr) return;
-        
-        if (newRawValue < attr.minValue) {
-            setWarningMessage(`⚠️ El mínimo para ${attr.name} es ${attr.minValue}. No se puede reducir.`, "#ffaa88");
-            const slider = document.getElementById(`${attr.id}_slider`);
-            if (slider) slider.value = currentValues[attr.id];
-            const numInput = document.getElementById(`${attr.id}_num`);
-            if (numInput) numInput.value = currentValues[attr.id];
-            return;
-        }
-        
-        let clampedValue = Math.min(attr.maxValue, newRawValue);
-        const oldValue = currentValues[attrId];
-        const oldTotal = calculateTotalPoints();
-        let newTotalWithoutAdjust = oldTotal - (oldValue * attr.costPerUnit) + (clampedValue * attr.costPerUnit);
-        let finalValue = clampedValue;
-        
-        if (newTotalWithoutAdjust > 200) {
-            const excess = newTotalWithoutAdjust - 200;
-            const maxReduction = Math.ceil(excess / attr.costPerUnit);
-            let possibleValue = clampedValue - maxReduction;
-            if (possibleValue < attr.minValue) possibleValue = attr.minValue;
-            const adjustedTotal = oldTotal - (oldValue * attr.costPerUnit) + (possibleValue * attr.costPerUnit);
-            if (adjustedTotal <= 200) finalValue = possibleValue;
-            else {
-                let best = attr.minValue;
-                for (let v = attr.minValue; v <= clampedValue; v++) {
-                    const testTotal = oldTotal - (oldValue * attr.costPerUnit) + (v * attr.costPerUnit);
-                    if (testTotal <= 200 && v <= attr.maxValue) best = v;
-                    else break;
-                }
-                finalValue = best;
-            }
-        }
-        
-        if (currentValues[attrId] !== finalValue) {
-            currentValues[attrId] = finalValue;
-            updateUI();
-        } else {
-            updateUI();
+    function applyRole(roleKey) {
+        if (roleKey === "personalizado") return;
+        const r = roles[roleKey];
+        if (r) {
+            attributes.forEach(attr => { currentValues[attr.id] = r[attr.id]; });
+            updateAllUI();
         }
     }
 
-    function updateUI() {
-        const totalPoints = calculateTotalPoints();
-        const remaining = 200 - totalPoints;
-        document.getElementById("totalPointsDisplay").innerText = totalPoints;
-        document.getElementById("remainingPointsDisplay").innerText = remaining;
-        const percent = Math.min(100, (totalPoints / 200) * 100);
-        document.getElementById("progressBar").style.width = `${percent}%`;
-        
-        const warningDiv = document.getElementById("warningMsg");
-        if (totalPoints > 200) {
-            warningDiv.innerHTML = "⚠️ ¡Has excedido los 200 puntos! Reduce algún atributo. ⚠️";
-            warningDiv.style.color = "#ffaa88";
-        } else if (totalPoints === 200) {
-            warningDiv.innerHTML = "✅ ¡PUNTOS JUSTOS! Héroe listo para la aventura ✅";
-            warningDiv.style.color = "#b9ffb9";
-        } else {
-            warningDiv.innerHTML = `📌 Te quedan ${remaining} puntos para distribuir. (Mínimo 1 por atributo)`;
-            warningDiv.style.color = "#f1c40f";
+    function loadRoleFromSelector() {
+        const selector = document.getElementById("roleSelector");
+        const selected = selector.value;
+        currentRole = selected;
+        if (selected !== "personalizado") {
+            applyRole(selected);
         }
-        
-        attributes.forEach(attr => {
-            const val = currentValues[attr.id];
-            const spent = val * attr.costPerUnit;
-            const valueSpan = document.getElementById(`${attr.id}_value`);
-            if (valueSpan) valueSpan.innerText = val;
-            const costSpan = document.getElementById(`${attr.id}_cost`);
-            if (costSpan) costSpan.innerText = `${spent} pts`;
-            const slider = document.getElementById(`${attr.id}_slider`);
-            if (slider && slider.value != val) slider.value = val;
-            const numInput = document.getElementById(`${attr.id}_num`);
-            if (numInput && numInput.value != val) numInput.value = val;
-        });
     }
 
-    // Distribución aleatoria mejorada (respeta mínimos y máximos)
+    function resetToMin() {
+        attributes.forEach(attr => { currentValues[attr.id] = attr.minValue; });
+        updateAllUI();
+        document.getElementById("roleSelector").value = "personalizado";
+        currentRole = "personalizado";
+    }
+
     function randomDistribution() {
-        resetToBase(); // empezar desde 1 en cada atributo
-        let remainingPoints = 200 - calculateTotalPoints(); // 163 tras reset
-        
+        resetToMin();
+        let remainingPoints = 200 - calculateTotalPoints();
         let attempts = 0;
-        const maxAttempts = 3000;
-        
-        while (remainingPoints > 0 && attempts < maxAttempts) {
+        while (remainingPoints > 0 && attempts < 2000) {
             let shuffled = [...attributes];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
+            for (let i = shuffled.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
             let changed = false;
             for (let attr of shuffled) {
-                const currentVal = currentValues[attr.id];
-                if (currentVal < attr.maxValue) {
-                    const cost = attr.costPerUnit;
-                    if (remainingPoints >= cost) {
-                        currentValues[attr.id]++;
-                        remainingPoints -= cost;
-                        changed = true;
-                        break;
-                    }
+                if (currentValues[attr.id] < attr.maxValue && remainingPoints >= attr.costPerUnit) {
+                    currentValues[attr.id]++;
+                    remainingPoints -= attr.costPerUnit;
+                    changed = true;
+                    break;
                 }
             }
             if (!changed) break;
             attempts++;
         }
-        
-        // Si aún sobran puntos (p.ej. 3 y solo quedan atributos de coste 5 o 10), usar Vida/FP (coste 1)
         if (remainingPoints > 0) {
-            const cheapAttrs = attributes.filter(a => a.costPerUnit === 1 && currentValues[a.id] < a.maxValue);
-            for (let attr of cheapAttrs) {
-                while (remainingPoints >= 1 && currentValues[attr.id] < attr.maxValue) {
-                    currentValues[attr.id]++;
-                    remainingPoints -= 1;
+            const cheap = attributes.filter(a => a.costPerUnit === 1 && currentValues[a.id] < a.maxValue);
+            for (let a of cheap) {
+                while (remainingPoints >= 1 && currentValues[a.id] < a.maxValue) {
+                    currentValues[a.id]++;
+                    remainingPoints--;
                 }
                 if (remainingPoints === 0) break;
             }
         }
-        
-        updateUI();
-        syncInputsWithCurrent();
-        const finalTotal = calculateTotalPoints();
-        if (finalTotal === 200) {
-            setWarningMessage("🎲 Distribución aleatoria completada (200 puntos).", "#b9ffb9");
+        updateAllUI();
+        document.getElementById("roleSelector").value = "personalizado";
+        currentRole = "personalizado";
+    }
+
+    function calculateTotalPoints() {
+        return attributes.reduce((sum, attr) => sum + currentValues[attr.id] * attr.costPerUnit, 0);
+    }
+
+    function setAttributeValue(attrId, newRawValue) {
+        const attr = attributes.find(a => a.id === attrId);
+        if (!attr) return;
+        if (newRawValue < attr.minValue) {
+            showTemporaryWarning(`⚠️ El mínimo para ${attr.name} es ${attr.minValue}.`);
+            syncInputs();
+            return;
+        }
+        let clampedValue = Math.min(attr.maxValue, newRawValue);
+        const oldValue = currentValues[attrId];
+        const oldTotal = calculateTotalPoints();
+        let newTotal = oldTotal - (oldValue * attr.costPerUnit) + (clampedValue * attr.costPerUnit);
+        let finalValue = clampedValue;
+        if (newTotal > 200) {
+            const excess = newTotal - 200;
+            const maxReduction = Math.ceil(excess / attr.costPerUnit);
+            let possible = clampedValue - maxReduction;
+            if (possible < attr.minValue) possible = attr.minValue;
+            if (oldTotal - (oldValue * attr.costPerUnit) + (possible * attr.costPerUnit) <= 200) finalValue = possible;
+            else {
+                let best = attr.minValue;
+                for (let v = attr.minValue; v <= clampedValue; v++) {
+                    if (oldTotal - (oldValue * attr.costPerUnit) + (v * attr.costPerUnit) <= 200) best = v;
+                    else break;
+                }
+                finalValue = best;
+            }
+        }
+        if (currentValues[attrId] !== finalValue) {
+            currentValues[attrId] = finalValue;
+            updateAllUI();
+            // Si se modifica manualmente, cambiar el selector a personalizado
+            if (currentRole !== "personalizado") {
+                document.getElementById("roleSelector").value = "personalizado";
+                currentRole = "personalizado";
+            }
         } else {
-            setWarningMessage(`🎲 Distribución aleatoria: se asignaron ${finalTotal} puntos. Ajusta manualmente.`, "#ffaa88");
+            updateAllUI();
         }
     }
 
-    function buildAttributesUI() {
+    function syncInputs() {
+        attributes.forEach(attr => {
+            const val = currentValues[attr.id];
+            const slider = document.getElementById(`${attr.id}_slider`);
+            if (slider && slider.value != val) slider.value = val;
+            const num = document.getElementById(`${attr.id}_num`);
+            if (num && num.value != val) num.value = val;
+            const span = document.getElementById(`${attr.id}_value_display`);
+            if (span) span.innerText = val;
+            const costSpan = document.getElementById(`${attr.id}_cost`);
+            if (costSpan) costSpan.innerText = `${val * attr.costPerUnit} pts`;
+        });
+    }
+
+    function showTemporaryWarning(msg) {
+        const warn = document.getElementById("warningMsg");
+        warn.innerHTML = msg;
+        warn.style.color = "#ffaa88";
+        setTimeout(() => {
+            const total = calculateTotalPoints();
+            if (total === 200) warn.innerHTML = "✅ ¡PUNTOS JUSTOS!";
+            else warn.innerHTML = `📌 Te quedan ${200 - total} puntos.`;
+            warn.style.color = "#f1c40f";
+        }, 2000);
+    }
+
+    function updateAllUI() {
+        const total = calculateTotalPoints();
+        const remaining = 200 - total;
+        document.getElementById("totalPointsDisplay").innerText = total;
+        document.getElementById("remainingPointsDisplay").innerText = remaining;
+        document.getElementById("progressBar").style.width = `${Math.min(100, (total/200)*100)}%`;
+        const warn = document.getElementById("warningMsg");
+        if (total === 200) warn.innerHTML = "✅ ¡PUNTOS JUSTOS!";
+        else warn.innerHTML = `📌 Te quedan ${remaining} puntos.`;
+        syncInputs();
+    }
+
+    // Imagen
+    const imageInput = document.getElementById("charImageInput");
+    imageInput.addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                selectedImageData = ev.target.result;
+                document.getElementById("imagePreviewName").innerText = "✅ Imagen cargada";
+            };
+            reader.readAsDataURL(file);
+        } else {
+            selectedImageData = null;
+            document.getElementById("imagePreviewName").innerText = "Ninguna imagen seleccionada";
+        }
+    });
+
+    // Generar y descargar ficha (sin previsualización)
+    async function downloadCharacterSheet() {
+        const charName = document.getElementById("charName").value.trim() || "Sin nombre";
+        let roleDisplayName = "Personalizado";
+        if (currentRole !== "personalizado" && roles[currentRole]) {
+            roleDisplayName = roles[currentRole].nombre;
+        } else {
+            roleDisplayName = "Aventurero";
+        }
+
+        // Crear div temporal para la ficha
+        const sheetDiv = document.createElement("div");
+        sheetDiv.style.position = "absolute";
+        sheetDiv.style.top = "-9999px";
+        sheetDiv.style.left = "-9999px";
+        sheetDiv.style.width = "600px";
+        sheetDiv.style.backgroundColor = "#fef7e0";
+        sheetDiv.style.borderRadius = "2rem";
+        sheetDiv.style.padding = "1.5rem";
+        sheetDiv.style.fontFamily = "'Georgia', 'Times New Roman', serif";
+        sheetDiv.style.boxShadow = "0 20px 30px rgba(0,0,0,0.3)";
+        sheetDiv.style.border = "2px solid #d4af37";
+        sheetDiv.style.backgroundImage = "radial-gradient(circle at 10% 20%, rgba(210,180,140,0.2) 2%, transparent 2.5%)";
+        sheetDiv.style.backgroundSize = "25px 25px";
+
+        // Cabecera con imagen (más grande y vertical)
+        const header = document.createElement("div");
+        header.style.display = "flex";
+        header.style.alignItems = "center";
+        header.style.gap = "1.5rem";
+        header.style.marginBottom = "1.5rem";
+        header.style.borderBottom = "2px solid #c2a144";
+        header.style.paddingBottom = "1rem";
+        header.style.flexWrap = "wrap";
+
+        // Contenedor de imagen: tamaño grande y vertical (140x180)
+        const imgContainer = document.createElement("div");
+        imgContainer.style.width = "140px";
+        imgContainer.style.height = "180px";
+        imgContainer.style.borderRadius = "20px";
+        imgContainer.style.backgroundColor = "#e9d6a7";
+        imgContainer.style.border = "3px solid #d4af37";
+        imgContainer.style.display = "flex";
+        imgContainer.style.alignItems = "center";
+        imgContainer.style.justifyContent = "center";
+        imgContainer.style.overflow = "hidden";
+        imgContainer.style.flexShrink = "0";
+
+        if (selectedImageData) {
+            const img = document.createElement("img");
+            img.src = selectedImageData;
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            imgContainer.appendChild(img);
+        } else {
+            imgContainer.innerHTML = '<span style="font-size:3rem;">🧙</span>';
+        }
+
+        const nameDiv = document.createElement("div");
+        nameDiv.style.flex = "1";
+        nameDiv.innerHTML = `
+            <div style="font-size:1.8rem; font-weight:bold; color:#3b2a1f;">${escapeHtml(charName)}</div>
+            <div style="font-size:1rem; color:#7a5a3a; margin-top:0.3rem;">${escapeHtml(roleDisplayName)}</div>
+        `;
+
+        header.appendChild(imgContainer);
+        header.appendChild(nameDiv);
+
+        // Atributos (con nombre completo y Ñ)
+        const statsContainer = document.createElement("div");
+        statsContainer.style.display = "flex";
+        statsContainer.style.flexDirection = "column";
+        statsContainer.style.gap = "0.6rem";
+        statsContainer.style.margin = "1rem 0";
+
+        attributes.forEach(attr => {
+            const val = currentValues[attr.id];
+            const row = document.createElement("div");
+            row.style.display = "flex";
+            row.style.justifyContent = "space-between";
+            row.style.backgroundColor = "rgba(0,0,0,0.05)";
+            row.style.padding = "0.4rem 0.8rem";
+            row.style.borderRadius = "40px";
+            row.style.borderLeft = "5px solid #d4af37";
+            // Mostrar el nombre original sin eliminar ñ
+            let displayName = attr.name;
+            if (attr.id === "dmg") displayName = "⚔️ DAÑO"; // aseguramos Ñ
+            row.innerHTML = `
+                <div style="font-weight:bold; display:flex; gap:0.5rem;">${attr.icon} ${displayName}</div>
+                <div style="font-size:1.3rem; font-weight:800; color:#b45f1b; background:#fff0cf; padding:0 10px; border-radius:30px;">${val}</div>
+            `;
+            statsContainer.appendChild(row);
+        });
+
+        // Pie de ficha: sin puntos totales ni texto adicional
+        const footerDiv = document.createElement("div");
+        footerDiv.style.textAlign = "center";
+        footerDiv.style.marginTop = "1rem";
+        footerDiv.style.fontSize = "0.7rem";
+        footerDiv.style.color = "#8b6946";
+        footerDiv.style.borderTop = "1px dashed #c2a144";
+        footerDiv.style.paddingTop = "0.5rem";
+        footerDiv.innerHTML = `<span style="background:#2c1e0e; color:#ffdfaa; padding:0.2rem 0.8rem; border-radius:20px;">⚔️🛡️✨</span>`;
+
+        sheetDiv.appendChild(header);
+        sheetDiv.appendChild(statsContainer);
+        sheetDiv.appendChild(footerDiv);
+
+        document.body.appendChild(sheetDiv);
+
+        try {
+            const canvas = await html2canvas(sheetDiv, {
+                scale: 2.5,
+                backgroundColor: "#fef7e0",
+                logging: false,
+                useCORS: true
+            });
+            const link = document.createElement("a");
+            const safeName = charName.replace(/[^a-z0-9]/gi, "_");
+            link.download = `ficha_${safeName}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        } catch (err) {
+            console.error(err);
+            alert("Error al generar la imagen. Intenta de nuevo.");
+        } finally {
+            document.body.removeChild(sheetDiv);
+        }
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Construir la calculadora
+    function buildCalculatorUI() {
         const container = document.getElementById("attributesContainer");
         container.innerHTML = "";
         attributes.forEach(attr => {
@@ -580,36 +596,31 @@
                     <span class="attr-limits">mín ${attr.minValue} · máx ${attr.maxValue}</span>
                 </div>
                 <div class="value-row">
-                    <input type="range" class="slider" id="${attr.id}_slider" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="${attr.minValue}">
-                    <div class="stat-value" id="${attr.id}_value">${attr.minValue}</div>
-                    <div class="number-input"><input type="number" id="${attr.id}_num" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="${attr.minValue}"></div>
+                    <input type="range" class="slider" id="${attr.id}_slider" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="1">
+                    <div class="stat-value-calc" id="${attr.id}_value_display">1</div>
+                    <div class="number-input"><input type="number" id="${attr.id}_num" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="1"></div>
                 </div>
-                <div class="cost-info">
+                <div class="cost-info" style="display:flex; justify-content:space-between; margin-top:5px;">
                     <span class="points-cost" id="${attr.id}_cost">${attr.minValue * attr.costPerUnit} pts</span>
-                    <span class="max-warning">${attr.costPerUnit === 1 ? (attr.id === "hp" ? "1 punto → 1 Vida" : "1 punto → 1 FP") : (attr.costPerUnit === 5 ? "5 puntos → +1 Daño" : "10 puntos → +1 " + attr.name.replace(/[^A-Za-zÁÉÍÓÚ]/g, ''))}</span>
+                    <span>${attr.costPerUnit ===1 ? "1→1" : attr.costPerUnit===5 ? "5→+1" : "10→+1"}</span>
                 </div>
             `;
             container.appendChild(card);
-            
             const slider = document.getElementById(`${attr.id}_slider`);
-            const numberInput = document.getElementById(`${attr.id}_num`);
-            slider.addEventListener("input", (e) => setAttributeValue(attr.id, parseInt(e.target.value, 10)));
-            numberInput.addEventListener("change", (e) => setAttributeValue(attr.id, parseInt(e.target.value, 10)));
+            const num = document.getElementById(`${attr.id}_num`);
+            slider.addEventListener("input", (e) => setAttributeValue(attr.id, parseInt(e.target.value)));
+            num.addEventListener("change", (e) => setAttributeValue(attr.id, parseInt(e.target.value)));
         });
     }
 
-    function init() {
-        buildAttributesUI();
-        resetToBase(); // valores iniciales a 1
-        document.getElementById("resetBtn").addEventListener("click", () => resetToBase());
-        document.getElementById("randomBtn").addEventListener("click", () => randomDistribution());
-        document.getElementById("magoBtn").addEventListener("click", () => loadPreset(roles.mago));
-        document.getElementById("luchadorBtn").addEventListener("click", () => loadPreset(roles.luchador));
-        document.getElementById("tanqueBtn").addEventListener("click", () => loadPreset(roles.tanque));
-        document.getElementById("asesinoBtn").addEventListener("click", () => loadPreset(roles.asesino));
-    }
-    
-    init();
+    // Eventos
+    document.getElementById("resetBtn").addEventListener("click", resetToMin);
+    document.getElementById("randomBtn").addEventListener("click", randomDistribution);
+    document.getElementById("roleSelector").addEventListener("change", loadRoleFromSelector);
+    document.getElementById("downloadBtn").addEventListener("click", downloadCharacterSheet);
+
+    buildCalculatorUI();
+    resetToMin();
 </script>
 </body>
 </html>
