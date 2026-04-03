@@ -104,6 +104,19 @@
         .attr-header {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 0.3rem;
+        }
+        .attr-name {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #ffdfaa;  /* Color visible, sin gradiente que pueda ocultarse */
+        }
+        .attr-limits {
+            font-size: 0.7rem;
+            background: #00000055;
+            padding: 0.1rem 0.5rem;
+            border-radius: 2rem;
+            color: #bbd4ff;
         }
         .value-row {
             display: flex;
@@ -146,6 +159,18 @@
             padding: 0.3rem 0.6rem;
             width: 65px;
             text-align: center;
+        }
+        .cost-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.7rem;
+            color: #aac8e6;
+        }
+        .points-cost {
+            background: #00000060;
+            padding: 0.1rem 0.5rem;
+            border-radius: 2rem;
         }
         button {
             background: #ffb347;
@@ -448,7 +473,7 @@
         }
     });
 
-    // Generar y descargar ficha (sin rol, sin emoji duplicado)
+    // Generar y descargar ficha
     async function downloadCharacterSheet() {
         const charName = document.getElementById("charName").value.trim() || "Sin nombre";
 
@@ -466,7 +491,6 @@
         sheetDiv.style.backgroundImage = "radial-gradient(circle at 10% 20%, rgba(210,180,140,0.2) 2%, transparent 2.5%)";
         sheetDiv.style.backgroundSize = "25px 25px";
 
-        // Cabecera: solo imagen y nombre (sin rol)
         const header = document.createElement("div");
         header.style.display = "flex";
         header.style.alignItems = "center";
@@ -506,7 +530,6 @@
         header.appendChild(imgContainer);
         header.appendChild(nameDiv);
 
-        // Atributos: sin duplicar el emoji (solo el icono una vez)
         const statsContainer = document.createElement("div");
         statsContainer.style.display = "flex";
         statsContainer.style.flexDirection = "column";
@@ -522,7 +545,6 @@
             row.style.padding = "0.4rem 0.8rem";
             row.style.borderRadius = "40px";
             row.style.borderLeft = "5px solid #d4af37";
-            // Mostrar solo el icono y el nombre (sin otro icono extra)
             row.innerHTML = `
                 <div style="font-weight:bold; display:flex; gap:0.5rem;">${attr.icon} ${attr.name}</div>
                 <div style="font-size:1.3rem; font-weight:800; color:#b45f1b; background:#fff0cf; padding:0 10px; border-radius:30px;">${val}</div>
@@ -591,7 +613,7 @@
                     <div class="stat-value-calc" id="${attr.id}_value_display">1</div>
                     <div class="number-input"><input type="number" id="${attr.id}_num" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="1"></div>
                 </div>
-                <div class="cost-info" style="display:flex; justify-content:space-between; margin-top:5px;">
+                <div class="cost-info">
                     <span class="points-cost" id="${attr.id}_cost">${attr.minValue * attr.costPerUnit} pts</span>
                     <span>${attr.costPerUnit ===1 ? "1→1" : attr.costPerUnit===5 ? "5→+1" : "10→+1"}</span>
                 </div>
