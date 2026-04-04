@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Calculadora de Atributos + Ficha descargable</title>
+    <title>Calculadora de Atributos + Ficha con Radar Etiquetado</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
@@ -226,7 +226,7 @@
             color: #ffdfaa;
             font-weight: bold;
         }
-        .input-group input {
+        .input-group input, .input-group textarea {
             background: #0f1a1f;
             border: 1px solid #ffb34788;
             color: #ffdd99;
@@ -234,6 +234,31 @@
             padding: 0.5rem 1rem;
             font-family: inherit;
             font-size: 0.9rem;
+        }
+        .skills-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .skill-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .skill-num {
+            background: #ffb347;
+            color: #1e2a32;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .skill-input {
+            flex: 1;
         }
         .file-label {
             background: #3a6ea5;
@@ -287,21 +312,27 @@
         <button id="asesinoBtn" class="role-btn">🗡️ ASESINO</button>
     </div>
 
-    <!-- Campos para la ficha -->
+    <!-- Datos para la ficha -->
     <div class="char-info">
         <div class="input-group">
             <label>📝 Nombre del personaje</label>
             <input type="text" id="charName" placeholder="Ej: Thorgrim, Elara, etc." value="Aventurero">
         </div>
         <div class="input-group">
-            <label>🖼️ Imagen de fondo (se usará como fondo de la ficha)</label>
+            <label>🖼️ Imagen del personaje (izquierda, tamaño original)</label>
             <label class="file-label" for="charImageInput">Seleccionar imagen</label>
             <input type="file" id="charImageInput" accept="image/jpeg, image/png, image/webp">
-            <span id="imagePreviewName" style="font-size:0.7rem; color:#bbaa77;">Ninguna imagen seleccionada (se usará un fondo neutro)</span>
+            <span id="imagePreviewName" style="font-size:0.7rem; color:#bbaa77;">Ninguna imagen seleccionada (icono por defecto)</span>
+        </div>
+        <div class="input-group">
+            <label>✨ Habilidades (máximo 5)</label>
+            <div class="skills-group" id="skillsContainer">
+                <!-- Se generarán 5 campos dinámicamente -->
+            </div>
         </div>
     </div>
 
-    <button id="downloadBtn" class="download-btn">📸 DESCARGAR FICHA COMO IMAGEN</button>
+    <button id="downloadBtn" class="download-btn">📸 DESCARGAR FICHA (radar etiquetado)</button>
     <footer>Vida (1:1) · Daño (5:1) · Armadura (10:1) · Pasos (10:1) · FP (1:1) · Alcance (10:1)</footer>
 </div>
 
@@ -320,27 +351,25 @@
     attributes.forEach(attr => { currentValues[attr.id] = 1; });
 
     let selectedImageData = null;
-    let currentRoleName = "Personalizado";
 
+    // Roles predefinidos
     const roles = {
-        mago: { hp:20, dmg:5, armor:1, steps:2, fp:55, range:7, nombre: "🧙 Mago" },
-        luchador: { hp:45, dmg:7, armor:4, steps:5, fp:10, range:2, nombre: "⚔️ Luchador" },
-        tanque: { hp:75, dmg:2, armor:6, steps:4, fp:5, range:1, nombre: "🛡️ Tanque" },
-        asesino: { hp:15, dmg:8, armor:1, steps:8, fp:5, range:5, nombre: "🗡️ Asesino" }
+        mago: { hp:20, dmg:5, armor:1, steps:2, fp:55, range:7 },
+        luchador: { hp:45, dmg:7, armor:4, steps:5, fp:10, range:2 },
+        tanque: { hp:75, dmg:2, armor:6, steps:4, fp:5, range:1 },
+        asesino: { hp:15, dmg:8, armor:1, steps:8, fp:5, range:5 }
     };
 
     function applyRole(roleKey) {
         const r = roles[roleKey];
         if (r) {
             attributes.forEach(attr => { currentValues[attr.id] = r[attr.id]; });
-            currentRoleName = r.nombre;
             updateAllUI();
         }
     }
 
     function resetToMin() {
         attributes.forEach(attr => { currentValues[attr.id] = attr.minValue; });
-        currentRoleName = "Personalizado";
         updateAllUI();
     }
 
@@ -373,7 +402,6 @@
                 if (remainingPoints === 0) break;
             }
         }
-        currentRoleName = "Aleatorio";
         updateAllUI();
     }
 
@@ -411,7 +439,6 @@
         }
         if (currentValues[attrId] !== finalValue) {
             currentValues[attrId] = finalValue;
-            currentRoleName = "Personalizado";
             updateAllUI();
         } else {
             updateAllUI();
@@ -456,7 +483,7 @@
         syncInputs();
     }
 
-    // Imagen de fondo
+    // Imagen
     const imageInput = document.getElementById("charImageInput");
     imageInput.addEventListener("change", function(e) {
         const file = e.target.files[0];
@@ -464,155 +491,306 @@
             const reader = new FileReader();
             reader.onload = function(ev) {
                 selectedImageData = ev.target.result;
-                document.getElementById("imagePreviewName").innerText = "✅ Imagen cargada (se usará como fondo)";
+                document.getElementById("imagePreviewName").innerText = "✅ Imagen cargada (tamaño original)";
             };
             reader.readAsDataURL(file);
         } else {
             selectedImageData = null;
-            document.getElementById("imagePreviewName").innerText = "Ninguna imagen seleccionada (fondo neutro)";
+            document.getElementById("imagePreviewName").innerText = "Ninguna imagen seleccionada";
         }
     });
 
-    // Generar y descargar ficha con imagen de fondo + info inferior
+    // Crear campos de habilidades (5)
+    function buildSkillsInputs() {
+        const container = document.getElementById("skillsContainer");
+        container.innerHTML = "";
+        for (let i = 1; i <= 5; i++) {
+            const div = document.createElement("div");
+            div.className = "skill-row";
+            div.innerHTML = `
+                <span class="skill-num">${i}</span>
+                <input type="text" class="skill-input" id="skill_${i}" placeholder="Nombre de la habilidad ${i}" value="">
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    // Dibujar gráfico hexagonal con etiquetas y tamaño reducido para que quepan los emojis
+    function drawRadarChart(ctx, width, height, values) {
+        // Reducimos el radio del gráfico al 30% del tamaño mínimo (antes 40%) para dejar más espacio
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(width, height) * 0.30; // más pequeño
+        const angleStep = (Math.PI * 2) / 6;
+        const angles = [];
+        for (let i = 0; i < 6; i++) {
+            angles.push(-Math.PI / 2 + i * angleStep); // empezar arriba
+        }
+        
+        // Limpiar
+        ctx.clearRect(0, 0, width, height);
+        
+        // Dibujar fondos (hexágonos de referencia)
+        ctx.strokeStyle = "#c2a144";
+        ctx.fillStyle = "rgba(210, 180, 140, 0.2)";
+        ctx.lineWidth = 1;
+        for (let level = 1; level <= 4; level++) {
+            ctx.beginPath();
+            const r = radius * (level / 4);
+            for (let i = 0; i < 6; i++) {
+                const x = centerX + r * Math.cos(angles[i]);
+                const y = centerY + r * Math.sin(angles[i]);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+        
+        // Dibujar líneas radiales
+        for (let i = 0; i < 6; i++) {
+            const x = centerX + radius * Math.cos(angles[i]);
+            const y = centerY + radius * Math.sin(angles[i]);
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+        
+        // Dibujar el polígono de datos
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const r = radius * values[i];
+            const x = centerX + r * Math.cos(angles[i]);
+            const y = centerY + r * Math.sin(angles[i]);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255, 180, 70, 0.5)";
+        ctx.fill();
+        ctx.strokeStyle = "#d4af37";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Dibujar pequeños círculos en los vértices
+        ctx.fillStyle = "#ffb347";
+        for (let i = 0; i < 6; i++) {
+            const r = radius * values[i];
+            const x = centerX + r * Math.cos(angles[i]);
+            const y = centerY + r * Math.sin(angles[i]);
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        
+        // ETIQUETAS: emojis en los vértices exteriores (más allá del radio)
+        const labels = ["❤️", "⚔️", "🛡️", "👟", "✨", "🏹"];
+        const labelRadius = radius + 22; // distancia desde el centro
+        ctx.font = "bold 18px 'Segoe UI Emoji'";
+        ctx.fillStyle = "#3b2a1f";
+        ctx.shadowBlur = 0;
+        for (let i = 0; i < 6; i++) {
+            const x = centerX + labelRadius * Math.cos(angles[i]);
+            const y = centerY + labelRadius * Math.sin(angles[i]);
+            ctx.fillText(labels[i], x - 12, y + 7);
+        }
+    }
+
+    // Generar y descargar ficha
     async function downloadCharacterSheet() {
         const charName = document.getElementById("charName").value.trim() || "Sin nombre";
-
-        // Contenedor principal de la ficha: tamaño fijo 600px de ancho, altura automática según contenido
-        const sheetDiv = document.createElement("div");
-        sheetDiv.style.position = "absolute";
-        sheetDiv.style.top = "-9999px";
-        sheetDiv.style.left = "-9999px";
-        sheetDiv.style.width = "600px";
-        sheetDiv.style.backgroundColor = "#fef7e0"; // fallback si no hay imagen
-        sheetDiv.style.borderRadius = "1rem";
-        sheetDiv.style.overflow = "hidden";
-        sheetDiv.style.boxShadow = "0 20px 30px rgba(0,0,0,0.3)";
-        sheetDiv.style.fontFamily = "'Georgia', 'Times New Roman', serif";
-        
-        // Crear un contenedor relativo para el fondo y el contenido
-        const relativeContainer = document.createElement("div");
-        relativeContainer.style.position = "relative";
-        relativeContainer.style.width = "100%";
-        relativeContainer.style.minHeight = "400px";
-        relativeContainer.style.display = "flex";
-        relativeContainer.style.flexDirection = "column";
-        
-        // --- Imagen de fondo ---
-        const bgImg = document.createElement("img");
-        if (selectedImageData) {
-            bgImg.src = selectedImageData;
-        } else {
-            // Imagen de fondo por defecto (un gradiente sutil)
-            bgImg.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 800'%3E%3Crect width='600' height='800' fill='%23fef7e0'/%3E%3C/svg%3E";
+        // Obtener habilidades
+        const skills = [];
+        for (let i = 1; i <= 5; i++) {
+            const input = document.getElementById(`skill_${i}`);
+            skills.push(input ? input.value.trim() : "");
         }
-        bgImg.style.width = "100%";
-        bgImg.style.height = "auto";
-        bgImg.style.display = "block";
-        bgImg.style.position = "relative";
-        bgImg.style.zIndex = "0";
         
-        // --- Capa de contenido (abajo del todo) ---
-        const contentOverlay = document.createElement("div");
-        contentOverlay.style.position = "relative";
-        contentOverlay.style.zIndex = "2";
-        contentOverlay.style.marginTop = "auto"; // empuja hacia abajo
-        contentOverlay.style.backgroundColor = "rgba(255, 248, 225, 0.95)";
-        contentOverlay.style.backdropFilter = "blur(0px)";
-        contentOverlay.style.borderTop = "3px solid #d4af37";
-        contentOverlay.style.borderRadius = "1rem 1rem 0 0";
-        contentOverlay.style.padding = "1rem 1.2rem";
-        contentOverlay.style.boxShadow = "0 -5px 15px rgba(0,0,0,0.1)";
+        // Crear contenedor principal de la ficha (ancho fijo 700px para buena resolución)
+        const sheetDiv = document.createElement("div");
+        sheetDiv.style.width = "700px";
+        sheetDiv.style.backgroundColor = "#fef7e0";
+        sheetDiv.style.borderRadius = "1.5rem";
+        sheetDiv.style.padding = "1.5rem";
+        sheetDiv.style.fontFamily = "'Georgia', 'Times New Roman', serif";
+        sheetDiv.style.boxShadow = "0 10px 25px rgba(0,0,0,0.2)";
+        sheetDiv.style.border = "1px solid #d4af37";
+        sheetDiv.style.display = "flex";
+        sheetDiv.style.gap = "1.5rem";
+        sheetDiv.style.flexWrap = "wrap";
         
-        // Nombre del personaje
+        // Columna izquierda: imagen (tamaño original)
+        const leftCol = document.createElement("div");
+        leftCol.style.flex = "1";
+        leftCol.style.minWidth = "200px";
+        leftCol.style.display = "flex";
+        leftCol.style.flexDirection = "column";
+        leftCol.style.alignItems = "center";
+        
+        const imgContainer = document.createElement("div");
+        imgContainer.style.width = "100%";
+        imgContainer.style.borderRadius = "1rem";
+        imgContainer.style.border = "3px solid #d4af37";
+        imgContainer.style.overflow = "hidden";
+        imgContainer.style.backgroundColor = "#e9d6a7";
+        imgContainer.style.display = "flex";
+        imgContainer.style.alignItems = "center";
+        imgContainer.style.justifyContent = "center";
+        
+        if (selectedImageData) {
+            const img = document.createElement("img");
+            img.src = selectedImageData;
+            img.style.width = "100%";
+            img.style.height = "auto";
+            img.style.display = "block";
+            imgContainer.appendChild(img);
+        } else {
+            imgContainer.innerHTML = '<span style="font-size:3rem; padding: 2rem;">🧙</span>';
+            imgContainer.style.padding = "1rem";
+        }
+        leftCol.appendChild(imgContainer);
+        
+        // Columna derecha: nombre, radar, atributos numéricos, habilidades
+        const rightCol = document.createElement("div");
+        rightCol.style.flex = "2";
+        rightCol.style.minWidth = "280px";
+        rightCol.style.display = "flex";
+        rightCol.style.flexDirection = "column";
+        rightCol.style.gap = "1rem";
+        
+        // Nombre
         const nameDiv = document.createElement("div");
-        nameDiv.style.textAlign = "center";
-        nameDiv.style.marginBottom = "1rem";
         nameDiv.style.fontSize = "1.8rem";
         nameDiv.style.fontWeight = "bold";
         nameDiv.style.color = "#3b2a1f";
-        nameDiv.style.textShadow = "1px 1px 0 rgba(255,255,200,0.8)";
+        nameDiv.style.textAlign = "center";
+        nameDiv.style.borderBottom = "2px solid #d4af37";
+        nameDiv.style.paddingBottom = "0.3rem";
         nameDiv.innerText = charName;
         
-        // Atributos en forma de cuadrícula
+        // Radar (canvas más grande para que los emojis quepan)
+        const radarContainer = document.createElement("div");
+        radarContainer.style.display = "flex";
+        radarContainer.style.justifyContent = "center";
+        const canvas = document.createElement("canvas");
+        canvas.width = 280;   // aumentado de 250 a 280
+        canvas.height = 280;
+        canvas.style.width = "280px";
+        canvas.style.height = "280px";
+        canvas.style.backgroundColor = "rgba(255,248,225,0.8)";
+        canvas.style.borderRadius = "1rem";
+        canvas.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+        const ctx = canvas.getContext("2d");
+        
+        // Preparar valores normalizados (0 a 1) según máximos
+        const maxVals = { hp:80, dmg:8, armor:6, steps:8, fp:60, range:8 };
+        const normalized = [
+            currentValues.hp / maxVals.hp,
+            currentValues.dmg / maxVals.dmg,
+            currentValues.armor / maxVals.armor,
+            currentValues.steps / maxVals.steps,
+            currentValues.fp / maxVals.fp,
+            currentValues.range / maxVals.range
+        ];
+        drawRadarChart(ctx, 280, 280, normalized);
+        radarContainer.appendChild(canvas);
+        
+        // Atributos numéricos debajo del radar
         const statsContainer = document.createElement("div");
         statsContainer.style.display = "flex";
-        statsContainer.style.flexDirection = "column";
+        statsContainer.style.flexWrap = "wrap";
         statsContainer.style.gap = "0.5rem";
+        statsContainer.style.justifyContent = "center";
+        statsContainer.style.marginTop = "0.5rem";
         
         attributes.forEach(attr => {
             const val = currentValues[attr.id];
-            const row = document.createElement("div");
-            row.style.display = "flex";
-            row.style.justifyContent = "space-between";
-            row.style.alignItems = "center";
-            row.style.backgroundColor = "rgba(0,0,0,0.05)";
-            row.style.padding = "0.4rem 0.8rem";
-            row.style.borderRadius = "40px";
-            row.style.borderLeft = "4px solid #d4af37";
-            row.innerHTML = `
-                <div style="font-weight:bold; display:flex; gap:0.5rem;">${attr.icon} ${attr.name}</div>
-                <div style="font-size:1.2rem; font-weight:800; color:#b45f1b; background:#fff0cf; padding:0 8px; border-radius:30px;">${val}</div>
-            `;
-            statsContainer.appendChild(row);
+            const statBox = document.createElement("div");
+            statBox.style.backgroundColor = "rgba(0,0,0,0.05)";
+            statBox.style.padding = "0.2rem 0.6rem";
+            statBox.style.borderRadius = "2rem";
+            statBox.style.display = "flex";
+            statBox.style.alignItems = "center";
+            statBox.style.gap = "0.3rem";
+            statBox.style.border = "1px solid #d4af37";
+            statBox.innerHTML = `<span style="font-weight:bold;">${attr.icon} ${attr.name}:</span> <span style="font-size:1.1rem; font-weight:800; color:#b45f1b;">${val}</span>`;
+            statsContainer.appendChild(statBox);
         });
         
-        // Pie de ficha (decorativo)
-        const footerDiv = document.createElement("div");
-        footerDiv.style.textAlign = "center";
-        footerDiv.style.marginTop = "0.8rem";
-        footerDiv.style.fontSize = "0.65rem";
-        footerDiv.style.color = "#8b6946";
-        footerDiv.style.borderTop = "1px solid #e0c8a0";
-        footerDiv.style.paddingTop = "0.5rem";
-        footerDiv.innerHTML = `<span style="background:#2c1e0e; color:#ffdfaa; padding:0.2rem 0.8rem; border-radius:20px;">⚔️🛡️✨</span>`;
+        // Habilidades
+        const skillsDiv = document.createElement("div");
+        skillsDiv.style.marginTop = "0.5rem";
+        skillsDiv.style.borderTop = "1px solid #e0c8a0";
+        skillsDiv.style.paddingTop = "0.8rem";
+        const skillsTitle = document.createElement("div");
+        skillsTitle.style.fontWeight = "bold";
+        skillsTitle.style.marginBottom = "0.5rem";
+        skillsTitle.style.color = "#7a5a3a";
+        skillsTitle.innerText = "⚡ HABILIDADES ⚡";
+        skillsDiv.appendChild(skillsTitle);
         
-        contentOverlay.appendChild(nameDiv);
-        contentOverlay.appendChild(statsContainer);
-        contentOverlay.appendChild(footerDiv);
+        const skillsList = document.createElement("ul");
+        skillsList.style.listStyle = "none";
+        skillsList.style.padding = "0";
+        skillsList.style.margin = "0";
+        skills.forEach((skill, idx) => {
+            const li = document.createElement("li");
+            li.style.marginBottom = "0.3rem";
+            li.style.fontSize = "0.9rem";
+            li.style.display = "flex";
+            li.style.alignItems = "center";
+            li.style.gap = "0.5rem";
+            const numSpan = document.createElement("span");
+            numSpan.style.backgroundColor = "#d4af37";
+            numSpan.style.color = "#2c1e0e";
+            numSpan.style.width = "22px";
+            numSpan.style.height = "22px";
+            numSpan.style.borderRadius = "50%";
+            numSpan.style.display = "inline-flex";
+            numSpan.style.alignItems = "center";
+            numSpan.style.justifyContent = "center";
+            numSpan.style.fontWeight = "bold";
+            numSpan.innerText = (idx+1).toString();
+            const textSpan = document.createElement("span");
+            textSpan.innerText = skill || "—";
+            li.appendChild(numSpan);
+            li.appendChild(textSpan);
+            skillsList.appendChild(li);
+        });
+        skillsDiv.appendChild(skillsList);
         
-        // Añadir la imagen y el overlay al contenedor relativo
-        relativeContainer.appendChild(bgImg);
-        relativeContainer.appendChild(contentOverlay);
-        sheetDiv.appendChild(relativeContainer);
+        rightCol.appendChild(nameDiv);
+        rightCol.appendChild(radarContainer);
+        rightCol.appendChild(statsContainer);
+        rightCol.appendChild(skillsDiv);
         
-        // Ajustar la posición del overlay para que quede siempre al final, incluso si la imagen es más pequeña
-        // Forzamos que el contenedor relativo tenga flex column y el overlay se pegue abajo
-        relativeContainer.style.display = "flex";
-        relativeContainer.style.flexDirection = "column";
-        contentOverlay.style.marginTop = "auto";
+        sheetDiv.appendChild(leftCol);
+        sheetDiv.appendChild(rightCol);
         
+        // Añadir al body temporal
         document.body.appendChild(sheetDiv);
         
         try {
-            const canvas = await html2canvas(sheetDiv, {
+            const canvasImg = await html2canvas(sheetDiv, {
                 scale: 2.5,
-                backgroundColor: null,
+                backgroundColor: "#fef7e0",
                 logging: false,
-                useCORS: true,
-                allowTaint: false
+                useCORS: true
             });
             const link = document.createElement("a");
             const safeName = charName.replace(/[^a-z0-9]/gi, "_");
             link.download = `ficha_${safeName}.png`;
-            link.href = canvas.toDataURL("image/png");
+            link.href = canvasImg.toDataURL("image/png");
             link.click();
         } catch (err) {
             console.error(err);
-            alert("Error al generar la imagen. Intenta de nuevo.");
+            alert("Error al generar la imagen.");
         } finally {
             document.body.removeChild(sheetDiv);
         }
     }
-
-    function escapeHtml(str) {
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
+    
     // Construir la calculadora
     function buildCalculatorUI() {
         const container = document.getElementById("attributesContainer");
@@ -642,7 +820,7 @@
             num.addEventListener("change", (e) => setAttributeValue(attr.id, parseInt(e.target.value)));
         });
     }
-
+    
     // Eventos
     document.getElementById("resetBtn").addEventListener("click", resetToMin);
     document.getElementById("randomBtn").addEventListener("click", randomDistribution);
@@ -651,8 +829,9 @@
     document.getElementById("tanqueBtn").addEventListener("click", () => applyRole("tanque"));
     document.getElementById("asesinoBtn").addEventListener("click", () => applyRole("asesino"));
     document.getElementById("downloadBtn").addEventListener("click", downloadCharacterSheet);
-
+    
     buildCalculatorUI();
+    buildSkillsInputs();
     resetToMin();
 </script>
 </body>
