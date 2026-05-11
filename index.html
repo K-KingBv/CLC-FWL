@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Calculadora de Atributos + Ficha con Radar Etiquetado</title>
+    <title>Calculadora de Atributos + Ficha con Radar</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
@@ -226,7 +226,7 @@
             color: #ffdfaa;
             font-weight: bold;
         }
-        .input-group input, .input-group textarea {
+        .input-group input, .input-group select {
             background: #0f1a1f;
             border: 1px solid #ffb34788;
             color: #ffdd99;
@@ -325,6 +325,15 @@
             <span id="imagePreviewName" style="font-size:0.7rem; color:#bbaa77;">Ninguna imagen seleccionada (icono por defecto)</span>
         </div>
         <div class="input-group">
+            <label>✨ Fuente de Poder (FP)</label>
+            <select id="fpTypeSelector">
+                <option value="mana">🔮 Maná</option>
+                <option value="furia">🔥 Furia</option>
+                <option value="energia">⚡ Energía</option>
+                <option value="estamina">💪 Estamina</option>
+            </select>
+        </div>
+        <div class="input-group">
             <label>✨ Habilidades (máximo 5)</label>
             <div class="skills-group" id="skillsContainer">
                 <!-- Se generarán 5 campos dinámicamente -->
@@ -338,14 +347,41 @@
 
 <script>
     // ---------- ATRIBUTOS Y LÓGICA ----------
-    const attributes = [
+    // Configuración de los tipos de FP
+    const fpTypes = {
+        mana: { icon: "🔮", name: "MANÁ" },
+        furia: { icon: "🔥", name: "FURIA" },
+        energia: { icon: "⚡", name: "ENERGÍA" },
+        estamina: { icon: "💪", name: "ESTAMINA" }
+    };
+    let currentFpType = "mana"; // por defecto
+
+    const attributesBase = [
         { id: "hp", name: "VIDA", maxValue: 80, costPerUnit: 1, minValue: 1, icon: "❤️" },
         { id: "dmg", name: "DAÑO", maxValue: 8, costPerUnit: 5, minValue: 1, icon: "⚔️" },
         { id: "armor", name: "ARMADURA", maxValue: 6, costPerUnit: 10, minValue: 1, icon: "🛡️" },
         { id: "steps", name: "PASOS", maxValue: 8, costPerUnit: 10, minValue: 1, icon: "👟" },
-        { id: "fp", name: "FP", maxValue: 80, costPerUnit: 1, minValue: 1, icon: "✨" },   // ← Cambiado de 60 a 80
+        { id: "fp", name: "MANÁ", maxValue: 80, costPerUnit: 1, minValue: 1, icon: "🔮" }, // se actualizará dinámicamente
         { id: "range", name: "ALCANCE", maxValue: 8, costPerUnit: 10, minValue: 1, icon: "🏹" }
     ];
+
+    let attributes = JSON.parse(JSON.stringify(attributesBase)); // copia mutable
+
+    function updateFpType() {
+        const select = document.getElementById("fpTypeSelector");
+        currentFpType = select.value;
+        const fpInfo = fpTypes[currentFpType];
+        // Actualizar el atributo fp en el array attributes
+        const fpAttr = attributes.find(a => a.id === "fp");
+        if (fpAttr) {
+            fpAttr.icon = fpInfo.icon;
+            fpAttr.name = fpInfo.name;
+        }
+        // Reconstruir la UI de la calculadora para reflejar el cambio
+        buildCalculatorUI();
+        // No es necesario reiniciar valores
+        updateAllUI();
+    }
 
     let currentValues = {};
     attributes.forEach(attr => { currentValues[attr.id] = 1; });
@@ -514,8 +550,8 @@
         }
     }
 
-    // Dibujar gráfico hexagonal con etiquetas
-    function drawRadarChart(ctx, width, height, values) {
+    // Dibujar gráfico hexagonal con etiquetas dinámicas para FP
+    function drawRadarChart(ctx, width, height, values, fpLabel) {
         const centerX = width / 2;
         const centerY = height / 2;
         const radius = Math.min(width, height) * 0.30;
@@ -577,7 +613,11 @@
             ctx.fill();
         }
         
-        const labels = ["❤️", "⚔️", "🛡️", "👟", "✨", "🏹"];
+        // Etiquetas: las primeras 5 fijas, la sexta dinámica según el tipo de FP
+        const fixedLabels = ["❤️", "⚔️", "🛡️", "👟", "🏹"];
+        // La sexta etiqueta viene de fpLabel (que ya incluye el emoji y texto? mejor solo emoji)
+        // Usaremos el emoji correspondiente al tipo de FP
+        const labels = [...fixedLabels, fpLabel];
         const labelRadius = radius + 22;
         ctx.font = "bold 18px 'Segoe UI Emoji'";
         ctx.fillStyle = "#3b2a1f";
@@ -596,6 +636,11 @@
             const input = document.getElementById(`skill_${i}`);
             skills.push(input ? input.value.trim() : "");
         }
+        
+        // Obtener el emoji y nombre actual de FP
+        const fpAttr = attributes.find(a => a.id === "fp");
+        const fpEmoji = fpAttr.icon;
+        const fpName = fpAttr.name;
         
         // Crear contenedor principal de la ficha
         const sheetDiv = document.createElement("div");
@@ -675,7 +720,7 @@
         canvas.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
         const ctx = canvas.getContext("2d");
         
-        const maxVals = { hp:80, dmg:8, armor:6, steps:8, fp:80, range:8 }; // FP ahora máximo 80
+        const maxVals = { hp:80, dmg:8, armor:6, steps:8, fp:80, range:8 };
         const normalized = [
             currentValues.hp / maxVals.hp,
             currentValues.dmg / maxVals.dmg,
@@ -684,7 +729,8 @@
             currentValues.fp / maxVals.fp,
             currentValues.range / maxVals.range
         ];
-        drawRadarChart(ctx, 280, 280, normalized);
+        // Pasar el emoji de FP como etiqueta para el radar
+        drawRadarChart(ctx, 280, 280, normalized, fpEmoji);
         radarContainer.appendChild(canvas);
         
         const statsContainer = document.createElement("div");
@@ -704,7 +750,10 @@
             statBox.style.alignItems = "center";
             statBox.style.gap = "0.3rem";
             statBox.style.border = "1px solid #d4af37";
-            statBox.innerHTML = `<span style="font-weight:bold;">${attr.icon} ${attr.name}:</span> <span style="font-size:1.1rem; font-weight:800; color:#b45f1b;">${val}</span>`;
+            // Para FP usamos el nombre dinámico
+            let displayName = attr.name;
+            if (attr.id === "fp") displayName = fpName;
+            statBox.innerHTML = `<span style="font-weight:bold;">${attr.icon} ${displayName}:</span> <span style="font-size:1.1rem; font-weight:800; color:#b45f1b;">${val}</span>`;
             statsContainer.appendChild(statBox);
         });
         
@@ -780,7 +829,7 @@
         }
     }
     
-    // Construir la calculadora
+    // Construir la calculadora (versión dinámica)
     function buildCalculatorUI() {
         const container = document.getElementById("attributesContainer");
         container.innerHTML = "";
@@ -793,12 +842,12 @@
                     <span class="attr-limits">mín ${attr.minValue} · máx ${attr.maxValue}</span>
                 </div>
                 <div class="value-row">
-                    <input type="range" class="slider" id="${attr.id}_slider" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="1">
-                    <div class="stat-value-calc" id="${attr.id}_value_display">1</div>
-                    <div class="number-input"><input type="number" id="${attr.id}_num" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="1"></div>
+                    <input type="range" class="slider" id="${attr.id}_slider" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="${currentValues[attr.id]}">
+                    <div class="stat-value-calc" id="${attr.id}_value_display">${currentValues[attr.id]}</div>
+                    <div class="number-input"><input type="number" id="${attr.id}_num" min="${attr.minValue}" max="${attr.maxValue}" step="1" value="${currentValues[attr.id]}"></div>
                 </div>
                 <div class="cost-info">
-                    <span class="points-cost" id="${attr.id}_cost">${attr.minValue * attr.costPerUnit} pts</span>
+                    <span class="points-cost" id="${attr.id}_cost">${currentValues[attr.id] * attr.costPerUnit} pts</span>
                     <span>${attr.costPerUnit ===1 ? "1→1" : attr.costPerUnit===5 ? "5→+1" : "10→+1"}</span>
                 </div>
             `;
@@ -818,9 +867,11 @@
     document.getElementById("tanqueBtn").addEventListener("click", () => applyRole("tanque"));
     document.getElementById("asesinoBtn").addEventListener("click", () => applyRole("asesino"));
     document.getElementById("downloadBtn").addEventListener("click", downloadCharacterSheet);
+    document.getElementById("fpTypeSelector").addEventListener("change", updateFpType);
     
-    buildCalculatorUI();
     buildSkillsInputs();
+    // Inicializar atributos con el tipo por defecto (Maná)
+    updateFpType(); // esto construye la UI y asigna valores iniciales
     resetToMin();
 </script>
 </body>
