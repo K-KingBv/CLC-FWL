@@ -6,6 +6,7 @@
     <title>Calculadora de Atributos + Ficha con Radar</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* (estilos exactamente iguales a la versión anterior, no cambio nada) */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -331,6 +332,7 @@
                 <option value="furia">🔥 Furia</option>
                 <option value="energia">⚡ Energía</option>
                 <option value="estamina">💪 Estamina</option>
+                <option value="fp">✨ FP</option>   <!-- NUEVA OPCIÓN -->
             </select>
         </div>
         <div class="input-group">
@@ -347,12 +349,13 @@
 
 <script>
     // ---------- ATRIBUTOS Y LÓGICA ----------
-    // Configuración de los tipos de FP
+    // Configuración de los tipos de FP (ahora incluye "fp")
     const fpTypes = {
         mana: { icon: "🔮", name: "MANÁ" },
         furia: { icon: "🔥", name: "FURIA" },
         energia: { icon: "⚡", name: "ENERGÍA" },
-        estamina: { icon: "💪", name: "ESTAMINA" }
+        estamina: { icon: "💪", name: "ESTAMINA" },
+        fp: { icon: "✨", name: "FP" }
     };
     let currentFpType = "mana"; // por defecto
 
@@ -361,25 +364,22 @@
         { id: "dmg", name: "DAÑO", maxValue: 8, costPerUnit: 5, minValue: 1, icon: "⚔️" },
         { id: "armor", name: "ARMADURA", maxValue: 6, costPerUnit: 10, minValue: 1, icon: "🛡️" },
         { id: "steps", name: "PASOS", maxValue: 8, costPerUnit: 10, minValue: 1, icon: "👟" },
-        { id: "fp", name: "MANÁ", maxValue: 80, costPerUnit: 1, minValue: 1, icon: "🔮" }, // se actualizará dinámicamente
+        { id: "fp", name: "MANÁ", maxValue: 80, costPerUnit: 1, minValue: 1, icon: "🔮" }, // se actualizará
         { id: "range", name: "ALCANCE", maxValue: 8, costPerUnit: 10, minValue: 1, icon: "🏹" }
     ];
 
-    let attributes = JSON.parse(JSON.stringify(attributesBase)); // copia mutable
+    let attributes = JSON.parse(JSON.stringify(attributesBase));
 
     function updateFpType() {
         const select = document.getElementById("fpTypeSelector");
         currentFpType = select.value;
         const fpInfo = fpTypes[currentFpType];
-        // Actualizar el atributo fp en el array attributes
         const fpAttr = attributes.find(a => a.id === "fp");
         if (fpAttr) {
             fpAttr.icon = fpInfo.icon;
             fpAttr.name = fpInfo.name;
         }
-        // Reconstruir la UI de la calculadora para reflejar el cambio
         buildCalculatorUI();
-        // No es necesario reiniciar valores
         updateAllUI();
     }
 
@@ -535,7 +535,6 @@
         }
     });
 
-    // Crear campos de habilidades (5)
     function buildSkillsInputs() {
         const container = document.getElementById("skillsContainer");
         container.innerHTML = "";
@@ -550,8 +549,8 @@
         }
     }
 
-    // Dibujar gráfico hexagonal con etiquetas dinámicas para FP
-    function drawRadarChart(ctx, width, height, values, fpLabel) {
+    // Dibujar gráfico hexagonal con etiquetas dinámicas (ahora la sexta etiqueta puede ser "✨")
+    function drawRadarChart(ctx, width, height, values, fpEmoji) {
         const centerX = width / 2;
         const centerY = height / 2;
         const radius = Math.min(width, height) * 0.30;
@@ -613,11 +612,8 @@
             ctx.fill();
         }
         
-        // Etiquetas: las primeras 5 fijas, la sexta dinámica según el tipo de FP
         const fixedLabels = ["❤️", "⚔️", "🛡️", "👟", "🏹"];
-        // La sexta etiqueta viene de fpLabel (que ya incluye el emoji y texto? mejor solo emoji)
-        // Usaremos el emoji correspondiente al tipo de FP
-        const labels = [...fixedLabels, fpLabel];
+        const labels = [...fixedLabels, fpEmoji];
         const labelRadius = radius + 22;
         ctx.font = "bold 18px 'Segoe UI Emoji'";
         ctx.fillStyle = "#3b2a1f";
@@ -628,7 +624,7 @@
         }
     }
 
-    // Generar y descargar ficha (método original: position absolute fuera de pantalla)
+    // Generar y descargar ficha
     async function downloadCharacterSheet() {
         const charName = document.getElementById("charName").value.trim() || "Sin nombre";
         const skills = [];
@@ -637,12 +633,10 @@
             skills.push(input ? input.value.trim() : "");
         }
         
-        // Obtener el emoji y nombre actual de FP
         const fpAttr = attributes.find(a => a.id === "fp");
         const fpEmoji = fpAttr.icon;
         const fpName = fpAttr.name;
         
-        // Crear contenedor principal de la ficha
         const sheetDiv = document.createElement("div");
         sheetDiv.style.position = "absolute";
         sheetDiv.style.top = "-9999px";
@@ -659,7 +653,6 @@
         sheetDiv.style.flexWrap = "wrap";
         sheetDiv.style.boxSizing = "border-box";
         
-        // Columna izquierda: imagen
         const leftCol = document.createElement("div");
         leftCol.style.flex = "1";
         leftCol.style.minWidth = "200px";
@@ -690,7 +683,6 @@
         }
         leftCol.appendChild(imgContainer);
         
-        // Columna derecha
         const rightCol = document.createElement("div");
         rightCol.style.flex = "2";
         rightCol.style.minWidth = "280px";
@@ -729,7 +721,6 @@
             currentValues.fp / maxVals.fp,
             currentValues.range / maxVals.range
         ];
-        // Pasar el emoji de FP como etiqueta para el radar
         drawRadarChart(ctx, 280, 280, normalized, fpEmoji);
         radarContainer.appendChild(canvas);
         
@@ -750,7 +741,6 @@
             statBox.style.alignItems = "center";
             statBox.style.gap = "0.3rem";
             statBox.style.border = "1px solid #d4af37";
-            // Para FP usamos el nombre dinámico
             let displayName = attr.name;
             if (attr.id === "fp") displayName = fpName;
             statBox.innerHTML = `<span style="font-weight:bold;">${attr.icon} ${displayName}:</span> <span style="font-size:1.1rem; font-weight:800; color:#b45f1b;">${val}</span>`;
@@ -829,7 +819,6 @@
         }
     }
     
-    // Construir la calculadora (versión dinámica)
     function buildCalculatorUI() {
         const container = document.getElementById("attributesContainer");
         container.innerHTML = "";
@@ -859,7 +848,6 @@
         });
     }
     
-    // Eventos
     document.getElementById("resetBtn").addEventListener("click", resetToMin);
     document.getElementById("randomBtn").addEventListener("click", randomDistribution);
     document.getElementById("magoBtn").addEventListener("click", () => applyRole("mago"));
@@ -870,8 +858,7 @@
     document.getElementById("fpTypeSelector").addEventListener("change", updateFpType);
     
     buildSkillsInputs();
-    // Inicializar atributos con el tipo por defecto (Maná)
-    updateFpType(); // esto construye la UI y asigna valores iniciales
+    updateFpType(); // inicializa con la opción por defecto (Maná) y construye la UI
     resetToMin();
 </script>
 </body>
